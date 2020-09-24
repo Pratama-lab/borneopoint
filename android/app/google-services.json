@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "496131193989",
+    "firebase_url": "https://borneo-point.firebaseio.com",
+    "project_id": "borneo-point",
+    "storage_bucket": "borneo-point.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:496131193989:android:6498d03bec4ad7e6f37dec",
+        "android_client_info": {
+          "package_name": "com.borneopoint"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "496131193989-aj85nal4bpq0dvmcnhis4u98ijn5pqi7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSjeBw9WVUzsEmQ5klZZwhU3kVu_hk86Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "496131193989-aj85nal4bpq0dvmcnhis4u98ijn5pqi7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
