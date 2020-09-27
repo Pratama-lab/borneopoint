@@ -23,6 +23,7 @@ import TransferScreen from './pages/transfer'
 import PurchaseScreen from './pages/purchase'
 import SummaryScreen from './pages/summary'
 import detailPulsaScreen from './pages/detailPulsa'
+import ForexScreen from './pages/forex'
 // import TransferScreen from './pages'
 import { AuthContext, AuthState } from './context'
 
@@ -176,6 +177,10 @@ const RootStack = () => {
             }}/>
             <Stack.Screen name={"Purchase"} component={PurchaseScreen} options={{
               header            : (props: StackHeaderProps) => <PageHeader {...props} title={'Purchase'}/>,
+              // animationEnabled: true,
+            }}/>
+            <Stack.Screen name={"Forex"} component={ForexScreen} options={{
+              header            : (props: StackHeaderProps) => <PageHeader {...props} title={'Forex'}/>,
               // animationEnabled: true,
             }}/>
             <Stack.Screen name={"Summary"} component={SummaryScreen} options={{

@@ -30,9 +30,10 @@ class Home extends Component<any,any>{
     super(props);
     this.infoAndPromotion = this.infoAndPromotion.bind(this);
     this.state = {
-      loading: false,
-      infoAndPromotions: [],
-      accountInfo: undefined
+      loading: true,
+      infoAndPromotions: null,
+      accountInfo: undefined,
+      status: 'Belum Terdaftar',
     }
   }
   componentDidMount = async () => {
@@ -65,12 +66,12 @@ class Home extends Component<any,any>{
     // }
 
     const check_login = await AsyncStorage.getItem('@id_login');
-    const name = await AsyncStorage.getItem('@name')
+
     // alert(check_login)
     if (check_login !== undefined){
       this.setState({
         id_login: check_login,
-        loading: true
+        loading: false
       })
       // alert('berhasil')
     }
@@ -81,14 +82,28 @@ class Home extends Component<any,any>{
     .then(resp => {
       // alert(JSON.stringify(resp.data))
       if (resp.data === 'you_not_registered_yet') {
-        console.log('Belum Terdaftar')
+        this.setState({
+          loading: false
+        })
       } else {
         // alert(JSON.stringify(resp.data.photo))
         this.setState({
           name: resp.data.name,
-          photo: resp.data.photo,
+          loading: false
         })
       }
+    })
+    .catch(err => {
+      console.log('Get User : '+err)
+    })
+
+    axios.get('https://borneopoint.co.id/public/api/get_media')
+    .then(res => {
+      console.log(this.state.infoAndPromotion)
+      this.setState({
+        infoAndPromotion: res.data,
+        loading: false
+      })
     })
   }
   refresh = () => {
@@ -111,7 +126,7 @@ class Home extends Component<any,any>{
     <ScrollView 
       style={styles.page} 
       contentContainerStyle={styles.pageContent}
-      // refreshControl={<RefreshControl refreshing={this.refresh()} onRefresh={this.refresh}/>}
+      refreshControl={<RefreshControl refreshing={this.state.loading} onRefresh={this.refresh()}/>}
     >
       {this.state.id_login === null ?
         <View style={styles.walletCard}>
@@ -189,11 +204,11 @@ class Home extends Component<any,any>{
           </TouchableOpacity>
         </View>
         <View style={styles.bottomPPOB}>
-          <TouchableOpacity style={styles.ppobItem}>
+          <TouchableOpacity style={styles.ppobItem} onPress={() => this.goTo('Forex')}>
             <Image style={styles.ppobItemImage} source={money}/>
             <Text style={styles.ppobItemText}>Forex</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.ppobItem}  onPress={() => this.goTo('Purchase', {itemType: 'etoll'})}>
+          <TouchableOpacity style={styles.ppobItem} onPress={() => this.goTo('Purchase', {itemType: 'etoll'})}>
             <Image style={styles.ppobItemImage} source={bpjs}/>
             <Text style={styles.ppobItemText}>EToll</Text>
           </TouchableOpacity>
@@ -211,14 +226,15 @@ class Home extends Component<any,any>{
         <Text style={styles.infoAndPromotionText}>Info & Promotion</Text>
         <FlatList 
           style={styles.scrollerContainer} 
+          refreshing={this.state.loading}
           nestedScrollEnabled={true} 
           contentContainerStyle={styles.innerScrollerContainer} 
           data={this.state.infoAndPromotions}
-          keyExtractor={(item) => item._id}
+          keyExtractor={item => item.id}
           horizontal={true}
           extraData={this.state.infoAndPromotions}
           // keyExtractor={(item,index) => index}
-          renderItem={(item) => <InfoItem name={item.item.name} description={item.item.description} goTo={this.infoAndPromotion} />}
+          renderItem={({item}) => <InfoItem name={item.category} description={item.description} goTo={this.infoAndPromotion} />}
           ItemSeparatorComponent={() => <View style={styles.flatlistSeparator}/>}>
           {/* <InfoItem/>
           <InfoItem/> */}

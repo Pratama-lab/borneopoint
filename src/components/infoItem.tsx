@@ -38,8 +38,8 @@ class InfoItem extends Component<{name:string, description: string,goTo: Functio
         bottom: 0,
         left: 0
       }}>
-        <Text style={{marginLeft: wp('2.2223'), fontWeight: 'bold', marginTop: wp('1.11115'), fontSize: wp('3.3%')}}>{ this.props.name ? this.props.name : "Info & Promotion title"}</Text>
-        <Text style={{marginLeft: wp('2.2223'), fontSize: wp('3%')}} numberOfLines={2}>{this.props.description ? this.props.description : "Mau TopUp dapet diskon coba klik di sini untuk lihat detail promo !"}</Text>
+        <Text style={{marginLeft: wp('2.2223'), fontWeight: 'bold', marginTop: wp('1.11115'), fontSize: wp('3.3%')}}>{ this.props.name}</Text>
+        <Text style={{marginLeft: wp('2.2223'), fontSize: wp('3%')}} numberOfLines={2}>{this.props.description}</Text>
       </View>
     </TouchableOpacity>
 }

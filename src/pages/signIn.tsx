@@ -71,9 +71,13 @@ class SignIn extends Component<any,{}>{
           email: this.state.email,
           id_login: this.state.id_email,
       }})
-      .then(() => {
+      .then(resp => {
+        console.log(resp)
         AsyncStorage.setItem('@id_login', this.state.id_email)
         this.goTo('Home')
+      })
+      .catch(err => {
+        console.log('Insert user: '+err)
       })
     }
     catch (error) {
@@ -87,92 +91,60 @@ class SignIn extends Component<any,{}>{
         console.log(error)
       }
     }
-    // try {
-    //   await GoogleSignin.hasPlayServices();
-    //   const userInfo = await GoogleSignin.signIn();
-    //   this.setState({
-    //     name: userInfo.user.name,
-    //     email: userInfo.user.email,
-    //     id_email: userInfo.user.id
-    //   });
-    //   console.log(userInfo);
-    // } catch (error) {
-    //   if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-    //     // user cancelled the login flow
-    //   } else if (error.code === statusCodes.IN_PROGRESS) {
-    //     // operation (e.g. sign in) is in progress already
-    //   } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-    //     // play services not available or outdated
-    //   } else {
-    //     // some other error happened
-    //   }
-    //   console.log(error)
-    // }
   }
-  // getInfoFromToken = token => {
-  //   const PROFILE_REQUEST_PARAMS = {
-  //     fields: {
-  //       string: 'id,name,first_name,last_name',
-  //     },
-  //   };
-  //   const profileRequest = new GraphRequest(
-  //     '/me',
-  //     {token, parameters: PROFILE_REQUEST_PARAMS},
-  //     (error, user) => {
-  //       if (error) {
-  //         console.log('login info has error: ' + error);
-  //         Alert.alert('Error fetching data: ' + error.toString());
-  //       } else {
-  //         this.setState({userInfo: user});
+  getInfoFromToken = token => {
+    const PROFILE_REQUEST_PARAMS = {
+      fields: {
+        string: 'id,name,email',
+      },
+    };
+    const profileRequest = new GraphRequest(
+      '/me',
+      {token, parameters: PROFILE_REQUEST_PARAMS},
+      (error, user) => {
+        if (error) {
+          console.log('login info has error: ' + error);
+          Alert.alert('Error fetching data: ' + error.toString());
+        } else {
+          this.setState({
+            userInfo: user,
+          });
+          // alert(JSON.stringify(user));
+          // console.log('result:', user);
 
-  //         alert(JSON.stringify(user));
-  //         console.log('result:', user);
-  //         // axios.get('https://api.healthplus.co/main/insert_fb', {params:{
-  //         //   nama: this.state.userInfo.name,
-  //         //   id_login: this.state.userInfo.id
-  //         // }})
-  //         // .then(response => {
-  //         //   // alert(JSON.stringify(response))
-  //         // AsyncStorage.setItem('@nama', this.state.userInfo.name)
-  //         // AsyncStorage.setItem('@id_login', this.state.userInfo.id)
-  //         // if (response.data.status === 'user_already_exist') {
-  //         // // Alert.alert("Data sudah ada")
-  //         //   axios.get('https://api.healthplus.co/main/update_id_notification', {params: {
-  //         //     id_login: this.state.userInfo.id,
-  //         //     id_notification: this.state.iid
-  //         //   }})
-  //         //   .then(() => {
-  //         //     AsyncStorage.setItem('@login', 'true')
-  //         //     this.props.navigation.navigate('Home')
-  //         //   })
-  //         // } else {
-  //         //   // Alert.alert("Data baru ditambahkan")
-  //         //   this.props.navigation.navigate('Fillinfo', {id_login: this.state.userInfo.id})
-  //         // }
-  //         // })
-  //       }
-  //     },
-  //   );
-  //   new GraphRequestManager().addRequest(profileRequest).start();
-  // };
-  handleFacebookSignIn = async () => {
+          axios.get('https://borneopoint.co.id/public/api/insert_user', {params:{
+            nama: this.state.userInfo.name,
+            email: this.state.userInfo.email,
+            id_login: this.state.userInfo.id,
+          }})
+          .then(() => {
+            AsyncStorage.setItem('@id_login', this.state.userInfo.id)
+            this.goTo('Home')
+          })
+        }
+      },
+    );
+    new GraphRequestManager().addRequest(profileRequest).start();
+  };
+  handleFacebookSignIn = () => {
     // const result = await authenticateFacebook()
     // console.debug(result)
-    // LoginManager.logInWithPermissions(['public_profile']).then(
-    //   login => {
-    //     if (login.isCancelled) {
-    //       console.log('Login cancelled');
-    //     } else {
-    //       AccessToken.getCurrentAccessToken().then(data => {
-    //         const accessToken = data.accessToken.toString();
-    //         this.getInfoFromToken(accessToken);
-    //       });
-    //     }
-    //   },
-    //   error => {
-    //     console.log('Login fail with error: ' + error);
-    //   },
-    // );
+    
+    LoginManager.logInWithPermissions(['public_profile']).then(
+      login => {
+        if (login.isCancelled) {
+          console.log('Login cancelled');
+        } else {
+          AccessToken.getCurrentAccessToken().then(data => {
+            const accessToken = data.accessToken.toString();
+            this.getInfoFromToken(accessToken);
+          });
+        }
+      },
+      error => {
+        console.log('Login fail with error: ' + error);
+      },
+    );
   }
   handleLogin = async ({firebaseIdToken}: {firebaseIdToken?: string}) => {
     try{

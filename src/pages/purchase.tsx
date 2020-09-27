@@ -64,10 +64,10 @@ class Purchase extends Component<any,any>{
     //   console.debug(error)
     // }
   }
-  // refresh = () => this.componentDidMount
-  // onhpChangeValue = (text) => {
-  //   this.setState({ hpValue: text })
-  // }
+  refresh = () => this.componentDidMount
+  onhpChangeValue = (text) => {
+    this.setState({ hpValue: text })
+  }
 
   selectingOperator = async (itemValue) => {
     this.setState({ selectedOperator: itemValue, productEnabled: false})
