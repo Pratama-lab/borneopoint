@@ -5,11 +5,12 @@ import InfoItem from '../components/infoItem'
 import { getAllInfoAndPromotion, getAccountInfo } from '../api'
 
 import { AuthContext } from '../context'
-import { widthPercentageToDP } from 'react-native-responsive-screen'
+import { widthPercentageToDP, heightPercentageToDP } from 'react-native-responsive-screen'
 import capitalizeWords from '../functions/capitalizeWords'
 import formatRupiah from '../functions/formatRupiah'
 import AsyncStorage from '@react-native-community/async-storage'
 import axios from 'axios'
+import FastImage from 'react-native-fast-image'
 
 const rqr = require('../assets/icons/rqr.png')
 const person = require('../assets/icons/person.png')
@@ -24,6 +25,7 @@ const money = require('../assets/icons/money.png')
 const bpjs = require('../assets/icons/bpjs.png')
 const vouchers = require('../assets/icons/vouchers.png')
 const others = require('../assets/icons/others.png')
+const url = 'https://borneopoint.co.id/public/asset/images/'
 
 class Home extends Component<any,any>{
   constructor(props: any){
@@ -33,7 +35,8 @@ class Home extends Component<any,any>{
       loading: true,
       infoAndPromotions: null,
       accountInfo: undefined,
-      status: 'Belum Terdaftar',
+      deskripsi: '',
+      description: [{ 'desc': 'hai cok' }, { 'desc': 'hai cok' }, { 'desc': 'hai cok' }, { 'desc': 'hai cok' }, { 'desc': 'hai cok' }]
     }
   }
   componentDidMount = async () => {
@@ -99,10 +102,10 @@ class Home extends Component<any,any>{
 
     axios.get('https://borneopoint.co.id/public/api/get_media')
     .then(res => {
-      console.log(this.state.infoAndPromotion)
+      // alert(JSON.stringify(this.state.deskripsi))
       this.setState({
-        infoAndPromotion: res.data,
-        loading: false
+        loading: false,
+        infoAndPromotion: res.data
       })
     })
   }
@@ -224,21 +227,24 @@ class Home extends Component<any,any>{
       </View>
       <View style={styles.infoAndPromotionContainer}>
         <Text style={styles.infoAndPromotionText}>Info & Promotion</Text>
-        <FlatList 
-          style={styles.scrollerContainer} 
-          refreshing={this.state.loading}
-          nestedScrollEnabled={true} 
-          contentContainerStyle={styles.innerScrollerContainer} 
-          data={this.state.infoAndPromotions}
-          keyExtractor={item => item.id}
-          horizontal={true}
-          extraData={this.state.infoAndPromotions}
-          // keyExtractor={(item,index) => index}
-          renderItem={({item}) => <InfoItem name={item.category} description={item.description} goTo={this.infoAndPromotion} />}
-          ItemSeparatorComponent={() => <View style={styles.flatlistSeparator}/>}>
-          {/* <InfoItem/>
-          <InfoItem/> */}
-        </FlatList>
+        <View style={{ marginTop: widthPercentageToDP('5%'), marginLeft: widthPercentageToDP('1.5%'), marginRight: widthPercentageToDP('2.5%') }}>
+          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+            <FlatList
+              data={this.state.infoAndPromotion}
+              keyExtractor={item => item.id}
+              horizontal={true}
+              extraData={this.state}
+              renderItem={({item}) => (
+                <TouchableOpacity style={{ width: widthPercentageToDP('50%'), borderRadius: widthPercentageToDP('2.5%'), elevation: 3, marginLeft: widthPercentageToDP('5%'), backgroundColor: 'white', marginTop: widthPercentageToDP('1%'), marginBottom: widthPercentageToDP('1%'), marginRight: widthPercentageToDP('1%'), alignItems: 'center' }}>
+                  <FastImage source={{ uri: url+item.images}} style={{ width: '100%', height: heightPercentageToDP('20%'), borderRadius: widthPercentageToDP('2.5%') }} />
+                  <View style={{ marginLeft: widthPercentageToDP('2%'), marginRight: widthPercentageToDP('2%'), marginBottom: widthPercentageToDP('2%'), marginTop: widthPercentageToDP('2%') }}>
+                    <Text>{item.description}</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+            />
+          </ScrollView>
+        </View>
       </View>
     </ScrollView>
 }

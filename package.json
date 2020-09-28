@@ -28,7 +28,7 @@
     "moment": "^2.26.0",
     "react": "16.11.0",
     "react-native": "0.62.2",
-    "react-native-camera": "git+https://git@github.com/react-native-community/react-native-camera.git",
+    "react-native-camera": "^3.40.0",
     "react-native-cli": "^2.0.1",
     "react-native-fast-image": "^8.3.2",
     "react-native-fbsdk": "^2.0.0",

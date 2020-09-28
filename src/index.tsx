@@ -24,6 +24,7 @@ import PurchaseScreen from './pages/purchase'
 import SummaryScreen from './pages/summary'
 import detailPulsaScreen from './pages/detailPulsa'
 import ForexScreen from './pages/forex'
+import dealDetailScreen from './pages/dealDetail'
 // import TransferScreen from './pages'
 import { AuthContext, AuthState } from './context'
 
@@ -180,7 +181,7 @@ const RootStack = () => {
               // animationEnabled: true,
             }}/>
             <Stack.Screen name={"Forex"} component={ForexScreen} options={{
-              header            : (props: StackHeaderProps) => <PageHeader {...props} title={'Forex'}/>,
+              header            : (props: StackHeaderProps) => <PageHeader {...props} title={'Purchase'}/>,
               // animationEnabled: true,
             }}/>
             <Stack.Screen name={"Summary"} component={SummaryScreen} options={{
@@ -193,6 +194,10 @@ const RootStack = () => {
             }}/>
             <Stack.Screen name="detailPulsa" component={detailPulsaScreen} options={{
               header            : (props: StackHeaderProps) => <PageHeader {...props} title={'Ongoing Payment'}/>,
+              // animationEnabled: true,
+            }}/>
+            <Stack.Screen name="dealDetail" component={dealDetailScreen} options={{
+              header            : (props: StackHeaderProps) => <PageHeader {...props} title={'Deals Detail'}/>,
               // animationEnabled: true,
             }}/>
           </>
