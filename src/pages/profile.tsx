@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { ScrollView, View, Image, Text,TouchableOpacity, Alert, TextInput, RefreshControl } from 'react-native'
+import { ScrollView, View, Image, Text,TouchableOpacity, Alert, TextInput, ActivityIndicator, StyleSheet } from 'react-native'
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen'
 import QRCode from 'react-native-qrcode-svg'
 import capitalizeWords from '../functions/capitalizeWords'
@@ -117,19 +117,19 @@ class Profile extends Component<IProfileProps>{
       console.debug(error)
     }
   }
-  createFormDataPhoto = (photo, id_login) => {
-		const data = new FormData();
+  // createFormDataPhoto = (photo, id_login) => {
+	// 	const data = new FormData();
 
-		if(this.state.fileName !== null) {
-			data.append('file_image', {
-				name : (photo.fileName == null)? 'myphoto': photo.fileName,
-				type : photo.type,
-				uri : photo.uri
-			});
-		}
-		data.append("id_login", id_login);
-		return data;
-	}
+	// 	if(this.state.fileName !== null) {
+	// 		data.append('file_image', {
+	// 			name : (photo.fileName == null)? 'myphoto': photo.fileName,
+	// 			type : photo.type,
+	// 			uri : photo.uri
+	// 		});
+	// 	}
+	// 	data.append("id_login", id_login);
+	// 	return data;
+	// }
   confirmEdit = async () => {
     // try{
     //   this.setState({lodaing: true})
@@ -164,6 +164,9 @@ class Profile extends Component<IProfileProps>{
       this.setState({
         edit: false,
       })
+    })
+    .catch(err => {
+      console.log("UPDATE USER => "+err)
     })
   }
   handleSignOut = () => {
@@ -200,183 +203,192 @@ class Profile extends Component<IProfileProps>{
     }
   }
   render = () => 
-    this.state.id_login !== null ? 
-    <View style={{flex: 1}}>
-      <ScrollView style={{flex: 1, backgroundColor: 'white'}} contentContainerStyle={{paddingTop: wp('5%'), paddingBottom: wp('5%')}}
-        refreshControl={<RefreshControl refreshing={this.state.loading} onRefresh={this.refresh()}/>}>
-        <View style={{
-          width: '100%',
-          alignItems: 'center',
-          position: 'relative'
-        }}>
-           {/* <RNCamera
-            ref={ref => {
-              this.camera = ref;
-            }}
-            style={{
-              width: 120,
-              height:120
-            }}
-            androidCameraPermissionOptions={{
-              title: 'Permission to use camera',
-              message: 'We need your permission to use your camera',
-              buttonPositive: 'Ok',
-              buttonNegative: 'Cancel',
-            }}
-            type={RNCamera.Constants.Type.back}
-          /> */}
-          <View style={{width: wp('35.55556%'), aspectRatio: 1/1, backgroundColor: '#ccc', borderRadius: 120, justifyContent: 'center', alignItems: 'center', position: 'relative'}}>
-            <Image source={this.state.pictureCacheUri ? {
-              uri: this.state.pictureCacheUri
-            } : this.state?.accountInfo?.profilePicture?.original ? {
-              uri: `https://api.borneopoint.co.id/public/profilePicture/${this.state?.accountInfo?.profilePicture?.original}?${Math.floor(Math.random() * 100 * 100)}`,
-              cache: 'reload'
-            } :person} style={{
-              width       : '100%',
-              aspectRatio : 1/1,
-              height      : '100%',
-              borderRadius: 120
-            }}/>
-            {
-              this.state.edit === true ?
-                <TouchableOpacity style={{ position: 'absolute', bottom: 0, right: 0, width: '30%', backgroundColor: '#fff', elevation: 2, aspectRatio: 1/1, borderRadius: 64, justifyContent: 'center', alignItems: 'center' }} onPress={() => this.setState({ camera: true })}>
-                  <Image source={camera} style={{
-                    width: '80%',
-                    height: '80%'
-                  }}/>
-                </TouchableOpacity> : null
-            }
-          </View>
-          <TouchableOpacity 
-            onPress={this.openMyQR}
-            style={{
-              width           : wp('17.777778'),
-              aspectRatio     : 1/1,
-              backgroundColor : '#3269B3',
-              borderRadius    : 120,
-              overflow        : 'hidden',
-              justifyContent  : 'center',
-              alignItems      : 'center',
-              position        : 'absolute',
-              right           : wp('5%'),
-            }}>
-            <Image source={rqr} style={{ width: wp('8.888889%'), aspectRatio: 1/1}}/>
-            <Text style={{color: 'white', fontSize: wp('2.77777%')}}>QR</Text>
-          </TouchableOpacity>
+    <>
+      {this.state.loading ?
+        <View style={[ styless.container_loading, styless.horizontal_loading ]}>
+          <ActivityIndicator size="large" color="#FFF" />
         </View>
-        <View style={{ marginTop: wp('5%'), marginLeft: wp('5%'), marginRight: wp('5%') }}>
-          <View style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            // backgroundColor: 'red'
-          }}>
-            <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Account</Text>
-            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', elevation: 2, padding: wp('0.5%'), paddingLeft: wp('2%'), paddingRight: wp('2%'), borderRadius: 12, marginLeft: 'auto'}} onPress={() => {
-              if(this.state.edit === false)
-                this.setState({ edit: true, inputName: this.state.name, inputEmail: this.state.email })
-              else
-                this.setState({ edit: false, inputName: undefined, inputEmail: undefined })
-            }}>
-              <Image source={pencil} style={{ width: wp('3%'), aspectRatio: 1/1}}/>
-              <Text style={{marginLeft: wp('1%')}}>Edit</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.infoContainer}>
-            <Text style={styles.infoLabel}>Name</Text>
-            {
-              this.state.edit !== true ? 
-                <Text style={styles.infoText}>{capitalizeWords(this.state.name)}</Text> :
-                <TextInput style={[styles.infoText, { borderColor: 'black', borderWidth: 1, borderRadius: 12}]} value={this.state.inputName} onChangeText={(value) => this.setState({ inputName: value })}/>
-            }
-
-          </View>
-          <View style={styles.infoContainer}>
-            <Text style={styles.infoLabel}>Email</Text>
-            {
-              this.state.edit !== true ? 
-                <Text style={styles.infoText}>{capitalizeWords(this.state.email)}</Text> :
-                <TextInput style={[styles.infoText, { borderColor: 'black', borderWidth: 1, borderRadius: 12}]} value={this.state.inputEmail} onChangeText={(value) => this.setState({ inputEmail: value })}/>
-            }
-          </View>
-          {/* <View style={styles.infoContainer}>
-            <Text style={styles.infoLabel}>Phone</Text>
-            <Text style={styles.infoText}></Text>
-          </View> */}
-          <View style={{marginTop: wp('4.44444445%')}}>
-            <Text style={styles.infoTitle}>Security</Text>
-          </View>
-          <View style={styles.infoContainer}>
-            <Text style={styles.infoLabel}>Password</Text>
-            <TouchableOpacity style={styles.infoText} onPress={() => this.goTo('ResetPassword')}>
-              <Text style={styles.resetPassText}>reset password</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={{marginTop: wp('4.44444445%')}}>
-            <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Others</Text>
-          </View>
-          <View style={styles.infoContainer}>
-            <Text style={styles.infoLabel}>App Version</Text>
-            <Text style={styles.infoText}>V 1.0.1</Text>
-          </View>
-          <TouchableOpacity style={styles.infoContainer} onPress={() => this.goTo('TermsAndCondition')}>
-            <Text style={styles.resetPassText}>Terms & Condition</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.infoContainer} onPress={() => this.goTo('PrivacyPolicy')}>
-            <Text style={styles.resetPassText}>Privacy Policy</Text>
-          </TouchableOpacity>
-          <View style={{flex: 1, marginTop: wp('10%'), alignItems: 'center'}}>
-          {
-            this.state.edit !== true ? 
-              <TouchableOpacity style={styles.signOutButton} onPress={this.confirmSignOut}>
-                <Text style={styles.signOutText}>SignOut</Text>
-              </TouchableOpacity> :
-              <TouchableOpacity style={styles.signOutButton} onPress={this.confirmEdit}>
-                <Text style={styles.signOutText}>Edit</Text>
-              </TouchableOpacity>
-          }
-          </View>
-        </View>
-      </ScrollView>
-      {
-        this.state.modal &&
-          <TouchableOpacity style={{position:'absolute',bottom:0,alignSelf:'flex-end', height: '100%', width: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(44, 44, 44, 0.5)'}} onPress={this.openMyQR}>
-            <View style={{backgroundColor: 'white', padding: wp('10%'), borderRadius: wp('5%')}}>
-              <QRCode value={this.props.authState._id} size={wp('65%')} logo={logo} logoSize={wp('20%')} logoBackgroundColor={'#FFF'}/>
-            </View>
-          </TouchableOpacity>
+        :
+        null
       }
-      {
-        this.state.camera &&
-        <TouchableOpacity style={{position:'absolute',bottom:0,alignSelf:'flex-end', height: '100%', width: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(44, 44, 44, 0.5)'}} onPress={() => this.setState({ camera: false })}>
-          <View style={{backgroundColor: 'white', padding: wp('10%'), borderRadius: wp('5%'), width: wp('80%'), height: wp('80%'), justifyContent: 'center', alignItems: 'center', position: 'relative'}}>
-            <RNCamera
+      {this.state.id_login !== null ? 
+      <View style={{flex: 1}}>
+        <ScrollView style={{flex: 1, backgroundColor: 'white'}} contentContainerStyle={{paddingTop: wp('5%'), paddingBottom: wp('5%')}}>
+          <View style={{
+            width: '100%',
+            alignItems: 'center',
+            position: 'relative'
+          }}>
+            {/* <RNCamera
               ref={ref => {
                 this.camera = ref;
               }}
-              style={{ height: wp(50), width: wp(50)}}
-              type={RNCamera.Constants.Type.front}
-              // flashMode={RNCamera.Constants.FlashMode.on}
-              ratio={"1:1"}
+              style={{
+                width: 120,
+                height:120
+              }}
               androidCameraPermissionOptions={{
                 title: 'Permission to use camera',
                 message: 'We need your permission to use your camera',
                 buttonPositive: 'Ok',
                 buttonNegative: 'Cancel',
+              }}
+              type={RNCamera.Constants.Type.back}
+            /> */}
+            <View style={{width: wp('35.55556%'), aspectRatio: 1/1, backgroundColor: '#ccc', borderRadius: 120, justifyContent: 'center', alignItems: 'center', position: 'relative'}}>
+              <Image source={this.state.pictureCacheUri ? {
+                uri: this.state.pictureCacheUri
+              } : this.state?.accountInfo?.profilePicture?.original ? {
+                uri: `https://api.borneopoint.co.id/public/profilePicture/${this.state?.accountInfo?.profilePicture?.original}?${Math.floor(Math.random() * 100 * 100)}`,
+                cache: 'reload'
+              } :person} style={{
+                width       : '100%',
+                aspectRatio : 1/1,
+                height      : '100%',
+                borderRadius: 120
               }}/>
-              <View style={{ flex: 0, flexDirection: 'row', justifyContent: 'center',  position: 'absolute', bottom: wp(2.5), right: wp(5), backgroundColor: '#3269B3', padding: wp(2.3), borderRadius: wp(2)}}>
-                <TouchableOpacity onPress={this.takePicture.bind(this)} style={{}}>
-                  <Text style={{ fontSize: 14, color: 'white', fontWeight: 'bold' }}> Take Picture </Text>
-                </TouchableOpacity>
-              </View>
+              {
+                this.state.edit === true ?
+                  <TouchableOpacity style={{ position: 'absolute', bottom: 0, right: 0, width: '30%', backgroundColor: '#fff', elevation: 2, aspectRatio: 1/1, borderRadius: 64, justifyContent: 'center', alignItems: 'center' }} onPress={() => this.setState({ camera: true })}>
+                    <Image source={camera} style={{
+                      width: '80%',
+                      height: '80%'
+                    }}/>
+                  </TouchableOpacity> : null
+              }
+            </View>
+            <TouchableOpacity 
+              onPress={this.openMyQR}
+              style={{
+                width           : wp('17.777778'),
+                aspectRatio     : 1/1,
+                backgroundColor : '#3269B3',
+                borderRadius    : 120,
+                overflow        : 'hidden',
+                justifyContent  : 'center',
+                alignItems      : 'center',
+                position        : 'absolute',
+                right           : wp('5%'),
+              }}>
+              <Image source={rqr} style={{ width: wp('8.888889%'), aspectRatio: 1/1}}/>
+              <Text style={{color: 'white', fontSize: wp('2.77777%')}}>QR</Text>
+            </TouchableOpacity>
           </View>
-          
-        </TouchableOpacity> 
+          <View style={{ marginTop: wp('5%'), marginLeft: wp('5%'), marginRight: wp('5%') }}>
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              // backgroundColor: 'red'
+            }}>
+              <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Account</Text>
+              <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', elevation: 2, padding: wp('0.5%'), paddingLeft: wp('2%'), paddingRight: wp('2%'), borderRadius: 12, marginLeft: 'auto'}} onPress={() => {
+                if(this.state.edit === false)
+                  this.setState({ edit: true, inputName: this.state.name, inputEmail: this.state.email })
+                else
+                  this.setState({ edit: false, inputName: undefined, inputEmail: undefined })
+              }}>
+                <Image source={pencil} style={{ width: wp('3%'), aspectRatio: 1/1}}/>
+                <Text style={{marginLeft: wp('1%')}}>Edit</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.infoContainer}>
+              <Text style={styles.infoLabel}>Name</Text>
+              {
+                this.state.edit !== true ? 
+                  <Text style={styles.infoText}>{capitalizeWords(this.state.name)}</Text> :
+                  <TextInput style={[styles.infoText, { borderColor: 'black', borderWidth: 1, borderRadius: 12}]} value={this.state.inputName} onChangeText={(value) => this.setState({ inputName: value })}/>
+              }
+
+            </View>
+            <View style={styles.infoContainer}>
+              <Text style={styles.infoLabel}>Email</Text>
+              {
+                this.state.edit !== true ? 
+                  <Text style={styles.infoText}>{capitalizeWords(this.state.email)}</Text> :
+                  <TextInput style={[styles.infoText, { borderColor: 'black', borderWidth: 1, borderRadius: 12}]} value={this.state.inputEmail} onChangeText={(value) => this.setState({ inputEmail: value })}/>
+              }
+            </View>
+            {/* <View style={styles.infoContainer}>
+              <Text style={styles.infoLabel}>Phone</Text>
+              <Text style={styles.infoText}></Text>
+            </View> */}
+            <View style={{marginTop: wp('4.44444445%')}}>
+              <Text style={styles.infoTitle}>Security</Text>
+            </View>
+            <View style={styles.infoContainer}>
+              <Text style={styles.infoLabel}>Password</Text>
+              <TouchableOpacity style={styles.infoText} onPress={() => this.goTo('ResetPassword')}>
+                <Text style={styles.resetPassText}>reset password</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={{marginTop: wp('4.44444445%')}}>
+              <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Others</Text>
+            </View>
+            <View style={styles.infoContainer}>
+              <Text style={styles.infoLabel}>App Version</Text>
+              <Text style={styles.infoText}>V 1.0.1</Text>
+            </View>
+            <TouchableOpacity style={styles.infoContainer} onPress={() => this.goTo('TermsAndCondition')}>
+              <Text style={styles.resetPassText}>Terms & Condition</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.infoContainer} onPress={() => this.goTo('PrivacyPolicy')}>
+              <Text style={styles.resetPassText}>Privacy Policy</Text>
+            </TouchableOpacity>
+            <View style={{flex: 1, marginTop: wp('10%'), alignItems: 'center'}}>
+            {
+              this.state.edit !== true ? 
+                <TouchableOpacity style={styles.signOutButton} onPress={this.confirmSignOut}>
+                  <Text style={styles.signOutText}>SignOut</Text>
+                </TouchableOpacity> :
+                <TouchableOpacity style={styles.signOutButton} onPress={this.confirmEdit}>
+                  <Text style={styles.signOutText}>Edit</Text>
+                </TouchableOpacity>
+            }
+            </View>
+          </View>
+        </ScrollView>
+        {
+          this.state.modal &&
+            <TouchableOpacity style={{position:'absolute',bottom:0,alignSelf:'flex-end', height: '100%', width: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(44, 44, 44, 0.5)'}} onPress={this.openMyQR}>
+              <View style={{backgroundColor: 'white', padding: wp('10%'), borderRadius: wp('5%')}}>
+                <QRCode value={this.props.authState._id} size={wp('65%')} logo={logo} logoSize={wp('20%')} logoBackgroundColor={'#FFF'}/>
+              </View>
+            </TouchableOpacity>
+        }
+        {
+          this.state.camera &&
+          <TouchableOpacity style={{position:'absolute',bottom:0,alignSelf:'flex-end', height: '100%', width: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(44, 44, 44, 0.5)'}} onPress={() => this.setState({ camera: false })}>
+            <View style={{backgroundColor: 'white', padding: wp('10%'), borderRadius: wp('5%'), width: wp('80%'), height: wp('80%'), justifyContent: 'center', alignItems: 'center', position: 'relative'}}>
+              <RNCamera
+                ref={ref => {
+                  this.camera = ref;
+                }}
+                style={{ height: wp(50), width: wp(50)}}
+                type={RNCamera.Constants.Type.front}
+                // flashMode={RNCamera.Constants.FlashMode.on}
+                ratio={"1:1"}
+                androidCameraPermissionOptions={{
+                  title: 'Permission to use camera',
+                  message: 'We need your permission to use your camera',
+                  buttonPositive: 'Ok',
+                  buttonNegative: 'Cancel',
+                }}/>
+                <View style={{ flex: 0, flexDirection: 'row', justifyContent: 'center',  position: 'absolute', bottom: wp(2.5), right: wp(5), backgroundColor: '#3269B3', padding: wp(2.3), borderRadius: wp(2)}}>
+                  <TouchableOpacity onPress={this.takePicture.bind(this)} style={{}}>
+                    <Text style={{ fontSize: 14, color: 'white', fontWeight: 'bold' }}> Take Picture </Text>
+                  </TouchableOpacity>
+                </View>
+            </View>
+            
+          </TouchableOpacity> 
+        }
+      </View>
+      : 
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <TouchableOpacity onPress={() => this.props.navigation.navigate('Auth')}><Text style={{textDecorationLine: 'underline'}}>Please Login First</Text></TouchableOpacity>
+      </View>
       }
-    </View>
-     : 
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <TouchableOpacity onPress={() => this.props.navigation.navigate('Auth')}><Text style={{textDecorationLine: 'underline'}}>Please Login First</Text></TouchableOpacity>
-    </View>
+    </>
 }
 
 export default (props) => 
@@ -385,3 +397,21 @@ export default (props) =>
     authState => <Profile authState={authState} {...props}/>
   }
   </AuthContext.Consumer>
+
+const styless = StyleSheet.create({
+  container_loading: {
+      flex: 1,
+      position:'absolute',
+      zIndex:2,
+      width: '100%',
+      height: '100%',
+      justifyContent: "center",
+      backgroundColor: 'rgba(0,0,0,0.1)'
+  },
+  
+    horizontal_loading: {
+      flexDirection: "row",
+      justifyContent: "space-around",
+      padding: 10
+  },
+})

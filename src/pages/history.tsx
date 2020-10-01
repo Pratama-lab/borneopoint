@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View, FlatList, TouchableOpacity, Text, RefreshControl } from 'react-native'
+import { View, FlatList, TouchableOpacity, Text, ActivityIndicator, StyleSheet } from 'react-native'
 
 import HistoryItem from '../components/historyItem'
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen'
@@ -15,7 +15,7 @@ class History extends Component<any>{
   constructor(props: any){
     super(props);
     this.state = {
-      loading: false,
+      loading: true,
       data: []
     }
   }
@@ -41,7 +41,7 @@ class History extends Component<any>{
     if (check_login !== undefined){
       this.setState({
         id_login: check_login,
-        loading: true
+        loading: false
       })
       // alert('berhasil')
     }
@@ -65,7 +65,15 @@ class History extends Component<any>{
     this.props.navigation.navigate('Summary', { purchaseId })
   }
   render = () => 
-    this.state.id_login !== null ? 
+  <>
+    {this.state.loading ?
+      <View style={[ styless.container_loading, styless.horizontal_loading ]}>
+        <ActivityIndicator size="large" color="#FFF" />
+      </View>
+      :
+      null
+    }
+    {this.state.id_login !== null ? 
       <FlatList 
         data={this.state.data}
         extraData={this.state.data}
@@ -73,7 +81,6 @@ class History extends Component<any>{
         horizontal={false} 
         contentContainerStyle={{ alignItems: 'center', paddingTop: wp('5%'), paddingBottom: wp('5%'), backgroundColor: 'white', height: '100%' }} 
         ItemSeparatorComponent={() => <View style={{ height: wp('3.33335%') }}/>}
-        refreshControl={<RefreshControl refreshing={this.refresh()} onRefresh={this.refresh()}/>}
         renderItem={({item}) => 
           <>
             <HistoryItem
@@ -89,6 +96,8 @@ class History extends Component<any>{
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center'}}>
         <TouchableOpacity onPress={() => this.props.navigation.navigate('Auth')}><Text style={{textDecorationLine: 'underline'}}>Please Login First</Text></TouchableOpacity>
       </View>
+    }
+  </>
 }
 
 export default (props) => 
@@ -97,3 +106,21 @@ export default (props) =>
     authState => <History authState={authState} {...props}/>
   }
   </AuthContext.Consumer>
+
+  const styless = StyleSheet.create({
+    container_loading: {
+        flex: 1,
+        position:'absolute',
+        zIndex:2,
+        width: '100%',
+        height: '100%',
+        justifyContent: "center",
+        backgroundColor: 'rgba(0,0,0,0.1)'
+    },
+    
+      horizontal_loading: {
+        flexDirection: "row",
+        justifyContent: "space-around",
+        padding: 10
+    },
+  })

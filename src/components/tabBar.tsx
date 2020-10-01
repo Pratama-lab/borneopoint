@@ -20,12 +20,6 @@ class Tab extends Component<any,any>{
   constructor(props:any){
     super(props)
   }
-  componentDidMount = () => {
-    console.log(this.props)
-  }
-  componentDidUpdate = () => {
-    console.log(this.props)
-  }
   swithcTab = (index: number) => {
     try{
       // this.props.navigation.reset(this.props.state.routes[index].name)

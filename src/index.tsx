@@ -217,9 +217,7 @@ class App extends Component{
   }
   render = () => 
     <AuthState>
-      <SafeAreaView style={{ height: '100%' }}>
-        <RootStack/>
-      </SafeAreaView>
+      <RootStack/>
     </AuthState>
 }
 

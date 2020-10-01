@@ -146,25 +146,38 @@ class SignIn extends Component<any,{}>{
       },
     );
   }
-  handleLogin = async ({firebaseIdToken}: {firebaseIdToken?: string}) => {
-    try{
-      console.debug('firebaseIdToken',firebaseIdToken)
-      console.log(firebaseIdToken == undefined ? { email: this.email, password: this.password } : { firebaseIdToken })
-      const result = await login(firebaseIdToken == undefined ? { email: this.email, password: this.password } : { firebaseIdToken })
-      if(result == undefined || result instanceof Error)
-        Alert.alert(
-          "SignIn",
-          "SignIn failed",
-          [
-            { text: "OK", onPress: () => console.log("OK Pressed") }
-          ],
-          { cancelable: false }
-        );
-      console.debug('result', result)
-      this.props.authState.setAuth({...result.data, token: result.token}, this.props.navigation.goBack)
-    }catch(error){
-      console.debug(error)
-    }
+  // handleLogin = async ({firebaseIdToken}: {firebaseIdToken?: string}) => {
+  //   try{
+  //     console.debug('firebaseIdToken',firebaseIdToken)
+  //     console.log(firebaseIdToken == undefined ? { email: this.email, password: this.password } : { firebaseIdToken })
+  //     const result = await login(firebaseIdToken == undefined ? { email: this.email, password: this.password } : { firebaseIdToken })
+  //     if(result == undefined || result instanceof Error)
+  //       Alert.alert(
+  //         "SignIn",
+  //         "SignIn failed",
+  //         [
+  //           { text: "OK", onPress: () => console.log("OK Pressed") }
+  //         ],
+  //         { cancelable: false }
+  //       );
+  //     console.debug('result', result)
+  //     this.props.authState.setAuth({...result.data, token: result.token}, this.props.navigation.goBack)
+  //   }catch(error){
+  //     console.debug(error)
+  //   }
+  // }
+  signIn = () => {
+    axios.get('https://borneopoint.co.id/public/api/insert_user', {params:{
+      email: this.email,
+      id_login: this.password,
+    }})
+    .then(() => {
+      AsyncStorage.setItem('@id_login', this.password)
+      this.goTo('Home')
+    })
+    .catch(err => {
+      console.log("INSERT USER BY EMAIL => "+err)
+    })
   }
   render = () => 
     // <KeyboardAvoidingView 
@@ -192,7 +205,7 @@ class SignIn extends Component<any,{}>{
           <Text style={styles.pageText}>Sign In</Text>
           <AuthInput type={'email'} getValue={this.getValueEmail} style={styles.input}/>
           <AuthInput type={'password'} getValue={this.getValuePassword} style={styles.input}/>
-          <TouchableOpacity style={styles.loginButton} onPress={() => this.handleLogin({})}>
+          <TouchableOpacity style={styles.loginButton} onPress={() => this.signIn()}>
             <Text style={styles.loginText}>Sign In</Text>
           </TouchableOpacity>
           <View style={styles.socialLoginContainer}>

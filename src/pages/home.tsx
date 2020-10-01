@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View, Text, ScrollView, Image, TouchableOpacity, FlatList, RefreshControl, Alert } from 'react-native'
+import { View, Text, ScrollView, Image, TouchableOpacity, FlatList, ActivityIndicator, Alert, StyleSheet } from 'react-native'
 import styles from '../styles/home'
 import InfoItem from '../components/infoItem'
 import { getAllInfoAndPromotion, getAccountInfo } from '../api'
@@ -25,7 +25,7 @@ const money = require('../assets/icons/money.png')
 const bpjs = require('../assets/icons/bpjs.png')
 const vouchers = require('../assets/icons/vouchers.png')
 const others = require('../assets/icons/others.png')
-const url = 'https://borneopoint.co.id/public/asset/images/'
+const url = 'https://borneopoint.co.id/public/storage/media_images/'
 
 class Home extends Component<any,any>{
   constructor(props: any){
@@ -126,10 +126,17 @@ class Home extends Component<any,any>{
     this.props.navigation.navigate('InfoAndPromotion',{ name, description})
   }
   render = () => 
+  <>
+    {this.state.loading ?
+      <View style={[ styless.container_loading, styless.horizontal_loading ]}>
+        <ActivityIndicator size="large" color="#FFF" />
+      </View>
+      :
+      null
+    }
     <ScrollView 
       style={styles.page} 
       contentContainerStyle={styles.pageContent}
-      refreshControl={<RefreshControl refreshing={this.state.loading} onRefresh={this.refresh()}/>}
     >
       {this.state.id_login === null ?
         <View style={styles.walletCard}>
@@ -227,7 +234,7 @@ class Home extends Component<any,any>{
       </View>
       <View style={styles.infoAndPromotionContainer}>
         <Text style={styles.infoAndPromotionText}>Info & Promotion</Text>
-        <View style={{ marginTop: widthPercentageToDP('5%'), marginLeft: widthPercentageToDP('1.5%'), marginRight: widthPercentageToDP('2.5%') }}>
+        <View style={{ marginTop: widthPercentageToDP('5%'), marginLeft: widthPercentageToDP('2%'), marginRight: widthPercentageToDP('2%') }}>
           <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
             <FlatList
               data={this.state.infoAndPromotion}
@@ -235,7 +242,7 @@ class Home extends Component<any,any>{
               horizontal={true}
               extraData={this.state}
               renderItem={({item}) => (
-                <TouchableOpacity style={{ width: widthPercentageToDP('50%'), borderRadius: widthPercentageToDP('2.5%'), elevation: 3, marginLeft: widthPercentageToDP('5%'), backgroundColor: 'white', marginTop: widthPercentageToDP('1%'), marginBottom: widthPercentageToDP('1%'), marginRight: widthPercentageToDP('1%'), alignItems: 'center' }}>
+                <TouchableOpacity style={{ width: widthPercentageToDP('50%'), borderRadius: widthPercentageToDP('2.5%'), elevation: 3, marginLeft: widthPercentageToDP('5%'), backgroundColor: 'white', marginTop: widthPercentageToDP('2%'), marginBottom: widthPercentageToDP('1%'), marginRight: widthPercentageToDP('1%'), alignItems: 'center' }}>
                   <FastImage source={{ uri: url+item.images}} style={{ width: '100%', height: heightPercentageToDP('20%'), borderRadius: widthPercentageToDP('2.5%') }} />
                   <View style={{ marginLeft: widthPercentageToDP('2%'), marginRight: widthPercentageToDP('2%'), marginBottom: widthPercentageToDP('2%'), marginTop: widthPercentageToDP('2%') }}>
                     <Text>{item.description}</Text>
@@ -247,9 +254,28 @@ class Home extends Component<any,any>{
         </View>
       </View>
     </ScrollView>
+  </>
 }
 
 export default (props) => 
 <AuthContext.Consumer>{
   authState => <Home authState={authState} {...props}/>
 }</AuthContext.Consumer>
+
+const styless = StyleSheet.create({
+  container_loading: {
+      flex: 1,
+      position:'absolute',
+      zIndex:2,
+      width: '100%',
+      height: '100%',
+      justifyContent: "center",
+      backgroundColor: 'rgba(0,0,0,0.1)'
+  },
+  
+    horizontal_loading: {
+      flexDirection: "row",
+      justifyContent: "space-around",
+      padding: 10
+  },
+})

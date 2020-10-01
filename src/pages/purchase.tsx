@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import {Picker} from '@react-native-community/picker';
-import { ScrollView , Alert, View, Text, TextInput, TouchableOpacity, Image, RefreshControl, FlatList} from 'react-native';
+import { ScrollView , Alert, View, Text, TextInput, TouchableOpacity, Image, ActivityIndicator, FlatList, StyleSheet} from 'react-native';
 import {getPrePaidItem} from '../api'
 import { widthPercentageToDP  as wp} from 'react-native-responsive-screen';
 import formatRupiah from '../functions/formatRupiah';
@@ -208,7 +208,14 @@ class Purchase extends Component<any,any>{
   }
   render = () =>
   <>
-  <ScrollView contentContainerStyle={{padding: wp('5%')}} refreshControl={<RefreshControl refreshing={this.state.loading} onRefresh={this.refresh}/>}>
+  {this.state.loading ?
+    <View style={[ styles.container_loading, styles.horizontal_loading ]}>
+      <ActivityIndicator size="large" color="#FFF" />
+    </View>
+    :
+    null
+  }
+  <ScrollView contentContainerStyle={{padding: wp('5%')}}>
     <View>
       <View>
         <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Select Operator</Text>
@@ -394,3 +401,21 @@ export default (props) =>
 <AuthContext.Consumer>{
   authState => <Purchase authState={authState} {...props}/>
 }</AuthContext.Consumer>
+
+const styles = StyleSheet.create({
+  container_loading: {
+      flex: 1,
+      position:'absolute',
+      zIndex:2,
+      width: '100%',
+      height: '100%',
+      justifyContent: "center",
+      backgroundColor: 'rgba(0,0,0,0.1)'
+  },
+  
+    horizontal_loading: {
+      flexDirection: "row",
+      justifyContent: "space-around",
+      padding: 10
+  },
+})
