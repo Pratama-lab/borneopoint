@@ -219,18 +219,18 @@ class Purchase extends Component<any,any>{
   }
   <ScrollView contentContainerStyle={{padding: wp('5%')}}>
     <Dialog
-      dialogTitle={<DialogTitle style={{ backgroundColor: '#FFF' }} title="Input Pin" />}
+      dialogTitle={<DialogTitle style={{ backgroundColor: '#FFF', elevation: 3 }} title="Input Pin" />}
       visible={this.state.visible}
       onTouchOutside={() => this.setState({visible:false})}
       dialogStyle={{ backgroundColor: '#FFF', elevation: 4 }}
         footer={
           <DialogFooter>
             <DialogButton
-              text="BATAL"
+              text="CANCEL"
               onPress={() => { this.setState({visible: false}) }}
             />
             <DialogButton
-              text="PILIH"
+              text="OK"
               onPress={() => { this.setState({visible: false}) }}
             />
           </DialogFooter>

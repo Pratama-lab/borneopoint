@@ -5,6 +5,7 @@ import {getPrePaidItem} from '../api'
 import { widthPercentageToDP  as wp} from 'react-native-responsive-screen';
 import formatRupiah from '../functions/formatRupiah';
 import axios from 'axios'
+import Dialog, { DialogFooter, DialogButton, DialogContent, DialogTitle } from 'react-native-popup-dialog';
 
 import { AuthContext } from '../context'
 
@@ -40,7 +41,8 @@ class Forex extends Component<any,any>{
     payment_method: undefined,
     topup_platform: [],
     currenPlatform: null,
-    selectedPlatform: []
+    selectedPlatform: [],
+    visible: false,
 }
     
     
@@ -218,6 +220,34 @@ class Forex extends Component<any,any>{
       null
     }
     <ScrollView contentContainerStyle={{padding: wp('5%')}}>
+        <Dialog
+          dialogTitle={<DialogTitle style={{ backgroundColor: '#FFF', elevation: 3 }} title="Input Pin" />}
+          visible={this.state.visible}
+          onTouchOutside={() => this.setState({visible:false})}
+          dialogStyle={{ backgroundColor: '#FFF', elevation: 4 }}
+            footer={
+              <DialogFooter>
+                <DialogButton
+                  text="CANCEL"
+                  onPress={() => { this.setState({visible: false}) }}
+                />
+                <DialogButton
+                  text="OK"
+                  onPress={() => { this.setState({visible: false}) }}
+                />
+              </DialogFooter>
+            }
+          >
+            <DialogContent>
+              <View style={{ width: wp('85%'), paddingTop: wp('7%'), alignItems: 'center' }}>
+                <TextInput
+                  style={{ width: wp('70%'), height: wp('15%'), backgroundColor: '#FFF', elevation: 4, borderRadius: wp('10%') }}
+                  textAlign={'center'}
+                  keyboardType={'numeric'}
+                />
+              </View>
+            </DialogContent>
+        </Dialog>
         <View>
             <View>
             <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Select Platform</Text>
@@ -361,8 +391,8 @@ class Forex extends Component<any,any>{
         marginRight: wp('5%')
       }}>
         <TouchableOpacity
-          onPress={() => this.handlePay()}
-          style={{ backgroundColor: this.state.selectedOperator != -1 && this.state.selectedPlatform.length != 0 && this.state.payment_method != undefined && this.state.amount != '' ? '#3269B3': '#ccc', borderRadius: wp('2.223%'), padding: wp('2.5%'), flexDirection: 'row'}} disabled={!(this.state.selectedOperator != -1 && this.state.selectedProduct != -1 && this.state.payment_method != undefined)}>
+          onPress={() => { this.setState({ visible: true }) }}
+          style={{ backgroundColor: this.state.selectedOperator != -1 && this.state.selectedPlatform.length != 0 && this.state.payment_method != undefined && this.state.amount != '' ? '#3269B3': '#ccc', borderRadius: wp('2.223%'), padding: wp('2.5%'), flexDirection: 'row'}} disabled={!(this.state.selectedOperator != -1 && this.state.selectedPlatform.length != 0 && this.state.payment_method != undefined && this.state.amount != '')}>
           <Image source={logo} style={{marginRight: wp('2.5%')}}/>
           <Text style={{fontWeight: 'bold', fontSize: wp('5%'), color: 'white'}}>Pay</Text>
         </TouchableOpacity>
