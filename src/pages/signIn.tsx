@@ -25,7 +25,7 @@ const logo = require('../assets/logo.png')
 class SignIn extends Component<any,{}>{
   constructor(props: any){
     super(props)
-    // this.handleGoogleSignIn = this.handleGoogleSignIn.bind(this)
+    this.handleGoogleSignIn = this.handleGoogleSignIn.bind(this)
   }
   private email
   private password
@@ -45,7 +45,9 @@ class SignIn extends Component<any,{}>{
   }
   goTo = (title, params?: any) => {
     try{
-      this.props.navigation.navigate(title, params)
+      this.props.navigation.reset({
+        routes: [{ name: 'Main' }]
+      })
     }catch(error){ console.debug(error) }
   }
   navigateRegister = () => {

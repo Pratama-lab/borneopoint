@@ -68,13 +68,17 @@ class Home extends Component<any,any>{
     //   )
     // }
 
+    this.setState({
+      loading: true,
+    })
+
     const check_login = await AsyncStorage.getItem('@id_login');
 
     // alert(check_login)
     if (check_login !== undefined){
       this.setState({
         id_login: check_login,
-        loading: false
+        loading: true
       })
       // alert('berhasil')
     }
@@ -84,17 +88,10 @@ class Home extends Component<any,any>{
     }})
     .then(resp => {
       // alert(JSON.stringify(resp.data))
-      if (resp.data === 'you_not_registered_yet') {
-        this.setState({
-          loading: false
-        })
-      } else {
-        // alert(JSON.stringify(resp.data.photo))
-        this.setState({
-          name: resp.data.name,
-          loading: false
-        })
-      }
+      this.setState({
+        name: resp.data.name,
+        loading: false
+      })
     })
     .catch(err => {
       console.log('Get User : '+err)
@@ -108,14 +105,6 @@ class Home extends Component<any,any>{
         infoAndPromotion: res.data
       })
     })
-  }
-  refresh = () => {
-    try{
-      // this.setState({ loading: false })
-      this.componentDidMount()
-    }catch(error){
-      console.log(error)
-    }
   }
   goTo = (title, params?: any) => {
     try{
@@ -234,7 +223,7 @@ class Home extends Component<any,any>{
       </View>
       <View style={styles.infoAndPromotionContainer}>
         <Text style={styles.infoAndPromotionText}>Info & Promotion</Text>
-        <View style={{ marginTop: widthPercentageToDP('5%'), marginLeft: widthPercentageToDP('2%'), marginRight: widthPercentageToDP('2%') }}>
+        <View style={{ marginTop: widthPercentageToDP('2%'), marginLeft: widthPercentageToDP('1%'), marginRight: widthPercentageToDP('1%') }}>
           <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
             <FlatList
               data={this.state.infoAndPromotion}
@@ -245,7 +234,7 @@ class Home extends Component<any,any>{
                 <TouchableOpacity style={{ width: widthPercentageToDP('50%'), borderRadius: widthPercentageToDP('2.5%'), elevation: 3, marginLeft: widthPercentageToDP('5%'), backgroundColor: 'white', marginTop: widthPercentageToDP('2%'), marginBottom: widthPercentageToDP('1%'), marginRight: widthPercentageToDP('1%'), alignItems: 'center' }}>
                   <FastImage source={{ uri: url+item.images}} style={{ width: '100%', height: heightPercentageToDP('20%'), borderRadius: widthPercentageToDP('2.5%') }} />
                   <View style={{ marginLeft: widthPercentageToDP('2%'), marginRight: widthPercentageToDP('2%'), marginBottom: widthPercentageToDP('2%'), marginTop: widthPercentageToDP('2%') }}>
-                    <Text>{item.description}</Text>
+                    <Text numberOfLines={5}>{item.description}</Text>
                   </View>
                 </TouchableOpacity>
               )}

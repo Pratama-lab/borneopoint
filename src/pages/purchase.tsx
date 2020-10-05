@@ -5,6 +5,7 @@ import {getPrePaidItem} from '../api'
 import { widthPercentageToDP  as wp} from 'react-native-responsive-screen';
 import formatRupiah from '../functions/formatRupiah';
 import axios from 'axios'
+import Dialog, { DialogFooter, DialogButton, DialogContent, DialogTitle } from 'react-native-popup-dialog';
 
 import { AuthContext } from '../context'
 
@@ -37,7 +38,8 @@ class Purchase extends Component<any,any>{
     inputEnabled: false,
     price: 0,
     payment_page: true,
-    payment_method: undefined
+    payment_method: undefined,
+    visible: false,
   }
 
 
@@ -133,79 +135,79 @@ class Purchase extends Component<any,any>{
     }catch(error){ console.debug(error) }
   }
 
-  handlePay = async () => {
-    this.setState({loading: true})
-    if (this.state.payment_method === "va_cimb_niaga"){
-      axios.get('https://borneopoint.co.id/public/api/va_cimb_niaga', {params:{
-        phone_number: this.state.phone_number,
-        pulsa_code: this.state.selectedProduct.split(' - ')[0],
-        user_id: "erwin",
-        name: "erwin",
-        email: "erwin@tri-niche.com",
-        price_borneo: Number(this.state.price) + 500,
-        price_mobilepulsa: Number(this.state.price),
-        payment_method: this.state.payment_method,
-        product_type: this.props.route.params.itemType
-      }})
-      .then(response => {
-        this.setState({loading: false})
-        console.log("LALALALALALAL => ", response.data)
-        if(response.data.Status === 200){
-          this.goTo('detailPulsa')
-        }else{
-          Alert.alert("Oops!", "Something Went Wrong, Try Again Later")
-        }
-      }).catch((e, f) => console.log(e, f))
-    } else {
-      alert('lala')
-      this.setState({loading: false})
-    }
-    // try{
-    //   // console.log(this.props.authState)
-    //   if(!this.props.authState.isSignedIn)
-    //     return Alert.alert( "Pay", "Please login or register first", [ { text: "Later", onPress: () => {}}, { text: "Login", onPress: () => this.props.navigation.navigate('Auth') },],{ cancelable: false })
+  // handlePay = async () => {
+  //   this.setState({loading: true})
+  //   if (this.state.payment_method === "va_cimb_niaga"){
+  //     axios.get('https://borneopoint.co.id/public/api/va_cimb_niaga', {params:{
+  //       phone_number: this.state.phone_number,
+  //       pulsa_code: this.state.selectedProduct.split(' - ')[0],
+  //       user_id: "erwin",
+  //       name: "erwin",
+  //       email: "erwin@tri-niche.com",
+  //       price_borneo: Number(this.state.price) + 500,
+  //       price_mobilepulsa: Number(this.state.price),
+  //       payment_method: this.state.payment_method,
+  //       product_type: this.props.route.params.itemType
+  //     }})
+  //     .then(response => {
+  //       this.setState({loading: false})
+  //       console.log("LALALALALALAL => ", response.data)
+  //       if(response.data.Status === 200){
+  //         this.goTo('detailPulsa')
+  //       }else{
+  //         Alert.alert("Oops!", "Something Went Wrong, Try Again Later")
+  //       }
+  //     }).catch((e, f) => console.log(e, f))
+  //   } else {
+  //     alert('lala')
+  //     this.setState({loading: false})
+  //   }
+  //   // try{
+  //   //   // console.log(this.props.authState)
+  //   //   if(!this.props.authState.isSignedIn)
+  //   //     return Alert.alert( "Pay", "Please login or register first", [ { text: "Later", onPress: () => {}}, { text: "Login", onPress: () => this.props.navigation.navigate('Auth') },],{ cancelable: false })
 
 
-    //   this.setState({loading: true})
-    //   const account = await getAccountInfo({userId: this.props.authState._id, userToken: this.props.authState.token})
-    //   this.setState({loading: false})
-    //   if(account == undefined) throw new Error('failed to get account info')
-    //   console.debug('account',account)
-    //   const wallet = account?.data?.wallet
-    //   if(wallet == undefined) throw new Error('failed to get wallet info')
-    //   let total = 0
-    //   if(this.state.selectedItemIndex != -1 && this.state.data && this.state.selectedProductIndex != -1) {
-    //     // console.log(this.state.data[this.state.selectedItemIndex].extraPrice)
-    //     // console.log(this.state.data[this.state.selectedItemIndex].product[this.state.selectedProductIndex].pulsa_price)
-    //     total = this.state.data[this.state.selectedItemIndex].extraPrice + this.state.data[this.state.selectedItemIndex].product[this.state.selectedProductIndex].pulsa_price
-    //     // console.log('number', number)
-    //     total = Number.isNaN(total) ? 0 : total
-    //   }else throw new Error('havent met condition')
-    //   // console.debug('wallet', wallet)
-    //   // console.debug('total', total)
-    //   if(wallet < total) return Alert.alert( "Pay", "Insuficient wallet please top up first", [ { text: "Ok", onPress: () => {}}],{ cancelable: false })
+  //   //   this.setState({loading: true})
+  //   //   const account = await getAccountInfo({userId: this.props.authState._id, userToken: this.props.authState.token})
+  //   //   this.setState({loading: false})
+  //   //   if(account == undefined) throw new Error('failed to get account info')
+  //   //   console.debug('account',account)
+  //   //   const wallet = account?.data?.wallet
+  //   //   if(wallet == undefined) throw new Error('failed to get wallet info')
+  //   //   let total = 0
+  //   //   if(this.state.selectedItemIndex != -1 && this.state.data && this.state.selectedProductIndex != -1) {
+  //   //     // console.log(this.state.data[this.state.selectedItemIndex].extraPrice)
+  //   //     // console.log(this.state.data[this.state.selectedItemIndex].product[this.state.selectedProductIndex].pulsa_price)
+  //   //     total = this.state.data[this.state.selectedItemIndex].extraPrice + this.state.data[this.state.selectedItemIndex].product[this.state.selectedProductIndex].pulsa_price
+  //   //     // console.log('number', number)
+  //   //     total = Number.isNaN(total) ? 0 : total
+  //   //   }else throw new Error('havent met condition')
+  //   //   // console.debug('wallet', wallet)
+  //   //   // console.debug('total', total)
+  //   //   if(wallet < total) return Alert.alert( "Pay", "Insuficient wallet please top up first", [ { text: "Ok", onPress: () => {}}],{ cancelable: false })
 
-    //   if(this.state.data[this.state.selectedItemIndex].hp_meta !== undefined && this.state.hpValue == undefined) return Alert.alert( "Purchase", "Purchase failed", [ { text: "Ok", onPress: () => {}}],{ cancelable: false })
-    //   this.setState({loading: true})
+  //   //   if(this.state.data[this.state.selectedItemIndex].hp_meta !== undefined && this.state.hpValue == undefined) return Alert.alert( "Purchase", "Purchase failed", [ { text: "Ok", onPress: () => {}}],{ cancelable: false })
+  //   //   this.setState({loading: true})
 
-    //   const result = await purchasePrePaid({
-    //     itemId: this.state.data[this.state.selectedItemIndex]._id,
-    //     productId: this.state.data[this.state.selectedItemIndex].product[this.state.selectedProductIndex]._id,
-    //     userToken: this.props.authState.token,
-    //     hp: this.state.hpValue || ""
-    //   })
-    //   console.log('this.state.hpValue', this.state.hpValue)
-    //   if(result == undefined) return Alert.alert( "Purchase", "Purchase failed", [ { text: "Ok", onPress: () => {}}],{ cancelable: false })
-    //   this.setState({loading: false})
+  //   //   const result = await purchasePrePaid({
+  //   //     itemId: this.state.data[this.state.selectedItemIndex]._id,
+  //   //     productId: this.state.data[this.state.selectedItemIndex].product[this.state.selectedProductIndex]._id,
+  //   //     userToken: this.props.authState.token,
+  //   //     hp: this.state.hpValue || ""
+  //   //   })
+  //   //   console.log('this.state.hpValue', this.state.hpValue)
+  //   //   if(result == undefined) return Alert.alert( "Purchase", "Purchase failed", [ { text: "Ok", onPress: () => {}}],{ cancelable: false })
+  //   //   this.setState({loading: false})
 
-    //   this.props.navigation.navigate('Summary', { purchaseId: result.data._id })
-    //   console.debug(result)
-    // }catch(error){
-    //   console.debug(error)
-    //   if(this.state.loading)
-    //     this.setState({loading: false})
-    // }
-  }
+  //   //   this.props.navigation.navigate('Summary', { purchaseId: result.data._id })
+  //   //   console.debug(result)
+  //   // }catch(error){
+  //   //   console.debug(error)
+  //   //   if(this.state.loading)
+  //   //     this.setState({loading: false})
+  //   // }
+  // }
   render = () =>
   <>
   {this.state.loading ?
@@ -216,6 +218,34 @@ class Purchase extends Component<any,any>{
     null
   }
   <ScrollView contentContainerStyle={{padding: wp('5%')}}>
+    <Dialog
+      dialogTitle={<DialogTitle style={{ backgroundColor: '#FFF' }} title="Input Pin" />}
+      visible={this.state.visible}
+      onTouchOutside={() => this.setState({visible:false})}
+      dialogStyle={{ backgroundColor: '#FFF', elevation: 4 }}
+        footer={
+          <DialogFooter>
+            <DialogButton
+              text="BATAL"
+              onPress={() => { this.setState({visible: false}) }}
+            />
+            <DialogButton
+              text="PILIH"
+              onPress={() => { this.setState({visible: false}) }}
+            />
+          </DialogFooter>
+        }
+      >
+        <DialogContent>
+          <View style={{ width: wp('85%'), paddingTop: wp('7%'), alignItems: 'center' }}>
+            <TextInput
+              style={{ width: wp('70%'), height: wp('15%'), backgroundColor: '#FFF', elevation: 4, borderRadius: wp('10%') }}
+              textAlign={'center'}
+              keyboardType={'numeric'}
+            />
+          </View>
+        </DialogContent>
+    </Dialog>
     <View>
       <View>
         <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Select Operator</Text>
@@ -331,7 +361,7 @@ class Purchase extends Component<any,any>{
           marginRight: wp('5%')
         }}>
           <TouchableOpacity 
-            onPress={() => this.handlePay()}
+            onPress={() => { this.setState({ visible: true }) }}
             style={{ backgroundColor: this.state.selectedOperator != -1 && this.state.selectedProduct != -1 && this.state.payment_method != undefined ? '#3269B3': '#ccc', borderRadius: wp('2.223%'), padding: wp('2.5%'), flexDirection: 'row'}} disabled={!(this.state.selectedOperator != -1 && this.state.selectedProduct != -1 && this.state.payment_method != undefined)}>
             <Image source={logo} style={{marginRight: wp('2.5%')}}/>
             <Text style={{fontWeight: 'bold', fontSize: wp('5%'), color: 'white'}}>Pay</Text>

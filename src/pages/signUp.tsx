@@ -48,7 +48,9 @@ class SignUp extends Component<any,{}>{
 
   goTo = (title, params?: any) => {
     try{
-      this.props.navigation.navigate(title, params)
+      this.props.navigation.reset({
+        routes: [{ name: 'Main' }]
+      })
     }catch(error){ console.debug(error) }
   }
 
