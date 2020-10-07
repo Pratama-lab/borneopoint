@@ -40,6 +40,7 @@ class Purchase extends Component<any,any>{
     payment_page: true,
     payment_method: undefined,
     visible: false,
+    pulsa: [ {id_pulsa: '1', pulsa_nominal: '1000', pulsa_price: '1800'} ],
   }
 
 
@@ -246,129 +247,165 @@ class Purchase extends Component<any,any>{
           </View>
         </DialogContent>
     </Dialog>
-    <View>
-      <View>
-        <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Select Operator</Text>
-      </View>
-      <View style={{ elevation: 2, backgroundColor: 'white', borderRadius  : wp('2.22223%') }}>
-        <Picker
-          mode={'dropdown'}
-          selectedValue={this.state.selectedOperator}
-          style={{ flex: 1,}}
-          onValueChange={(itemValue, itemIndex) => this.selectingOperator(itemValue)}>
-          <Picker.Item value={-1} label='Choose item ...' />
-          {
-            this.state.all_operator != undefined ? 
-              this.state.all_operator.map((item,index) => <Picker.Item key={index} label={item} value={item} />) : null
-          }
-        </Picker>
-      </View>
-    </View>
-    <View>
-      <View>
-        <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Select Item</Text>
-      </View>
-      <View style={{ elevation: 2, backgroundColor: 'white', borderRadius  : wp('2.22223%') }}>
-        <Picker
-          enabled={this.state.productEnabled}
-          mode={'dropdown'}
-          selectedValue={this.state.selectedProduct}
-          style={{ flex: 1,}}
-          onValueChange={(itemValue, itemIndex) => this.selectingProduct(itemValue)}>
-          <Picker.Item value={-1} label='Choose item ...' />
-          {
-            this.state.all_product != undefined ? 
-              this.state.all_product.map((item,index) => <Picker.Item key={index} label={item.pulsa_nominal} value={item.pulsa_code+' - '+item.pulsa_price} />) : null
-          }
-        </Picker>
-      </View>
-    </View>
     { this.props.route.params.itemType === 'pulsa' ?
       <View>
         <View>
-          <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Phone Number</Text>
+          <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>No. Tujuan</Text>
         </View>
-        <View style={{ elevation: 2, backgroundColor: 'white', borderRadius  : wp('2.22223%') }}>
-          <TextInput onChangeText={(text) => this.setState({phone_number: text})} placeholder="Your Phone Number" editable={this.state.selectedOperator !== -1 && this.state.selectedProduct !== -1 ? true : false} style={{fontSize: 16, paddingHorizontal: 10}} keyboardType='phone-pad'></TextInput>
+        <View style={{ flexDirection: 'row' }}>
+          <View style={{ borderBottomWidth: 2, flexDirection: 'row' }}>
+            <TextInput
+              onChangeText={(text) => this.setState({phone_number: text})}
+              placeholder="Your Phone Number"
+              style={{ fontSize: 16, width: wp('60%') }}
+              keyboardType='phone-pad'
+            />
+            <View style={{ alignItems: 'center', alignContent: 'center', width: wp('13%') }}>
+              <Image source={logo} style={{ marginTop: wp('2%') }} />
+            </View>
+          </View>
+          <View style={{ alignItems: 'center', alignContent: 'center', marginLeft: wp('3%'), width: wp('13%') }}>
+            <TouchableOpacity>
+              <Image source={require('../assets/icons/address-book.png')} style={{ width: wp('10%'), height: wp('10%'), marginTop: wp('2%') }} />
+            </TouchableOpacity>
+          </View>
         </View>
+
+        <View style={{ marginTop: wp('5%') }}>
+          <Text style={{ fontWeight: 'bold', fontSize: wp('5%') }}>Nominal</Text>
+        </View>
+        <FlatList
+          data={this.state.pulsa}
+          keyExtractor={item => item.id_pulsa}
+          renderItem={({item}) => (
+            <View>
+              <TouchableOpacity style={{ backgroundColor: '#FFF', elevation: 2, borderRadius: wp('2.3%'), width: wp('90%'), height: wp('15%'), flexDirection: 'row' }}>
+                <View style={{ marginLeft: wp('5%'), width: wp('40%') }}>
+                  <Text style={{ fontSize: 20, marginTop: wp('3%') }}>{item.pulsa_nominal}</Text>
+                </View>
+                <View style={{ marginLeft: wp('5%'), width: wp('35%'), alignItems: 'flex-end' }}>
+                  <Text style={{ fontSize: 20, marginTop: wp('3%') }}>Rp {item.pulsa_price}</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          )}
+        />
       </View>
       :
-      null
-    }
-    { this.state.selectedOperator != -1 && this.state.selectedProduct != -1 ?
-      <View style={{ flex:1, marginTop: wp('3') }}>
+      <>
         <View>
-          <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Payment Method</Text>
+          <View>
+            <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Select Operator</Text>
+          </View>
+          <View style={{ elevation: 2, backgroundColor: 'white', borderRadius  : wp('2.22223%') }}>
+            <Picker
+              mode={'dropdown'}
+              selectedValue={this.state.selectedOperator}
+              style={{ flex: 1 }}
+              onValueChange={(itemValue, itemIndex) => this.selectingOperator(itemValue)}>
+              <Picker.Item value={-1} label='Choose item ...' />
+              {
+                this.state.all_operator != undefined ? 
+                  this.state.all_operator.map((item,index) => <Picker.Item key={index} label={item} value={item} />) : null
+              }
+            </Picker>
+          </View>
         </View>
-        <TouchableOpacity onPress={() => this.selectingPaymentMethod("va_cimb_niaga")}>
-        <View style={{ elevation: 2, backgroundColor: this.state.payment_method == "va_cimb_niaga" ? '#1DF318' : 'white', borderRadius  : wp('2.22223%'), marginVertical: wp('1'), paddingHorizontal: wp('2.22223%'), height: wp('10'), justifyContent: 'center' }}>
-          <Text style={{ fontSize: wp('3.5%'), fontWeight: this.state.payment_method == "va_cimb_niaga" ? 'none' : 'none' }}>
-            <Image source={cimbniagaLogo} style={{width: wp('10'), height: wp('5')}} />
-            &nbsp;&nbsp;VA Cimb Niaga
-          </Text>
+        <View>
+          <View>
+            <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Select Item</Text>
+          </View>
+          <View style={{ elevation: 2, backgroundColor: 'white', borderRadius  : wp('2.22223%') }}>
+            <Picker
+              enabled={this.state.productEnabled}
+              mode={'dropdown'}
+              selectedValue={this.state.selectedProduct}
+              style={{ flex: 1,}}
+              onValueChange={(itemValue, itemIndex) => this.selectingProduct(itemValue)}>
+              <Picker.Item value={-1} label='Choose item ...' />
+              {
+                this.state.all_product != undefined ? 
+                  this.state.all_product.map((item,index) => <Picker.Item key={index} label={item.pulsa_nominal} value={item.pulsa_code+' - '+item.pulsa_price} />) : null
+              }
+            </Picker>
+          </View>
         </View>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => this.selectingPaymentMethod("va_bni")}>
-        <View style={{ elevation: 2, backgroundColor: this.state.payment_method == "va_bni" ? '#1DF318' : 'white', borderRadius  : wp('2.22223%'), marginVertical: wp('1'), paddingHorizontal: wp('2.22223%'), height: wp('10'), justifyContent: 'center' }}>
-          <Text style={{ fontSize: wp('3.5%'), fontWeight: this.state.payment_method == "va_bni" ? 'none' : 'none' }}>
-            <Image source={bniLogo} style={{width: wp('10'), height: wp('5')}} />
-            &nbsp;&nbsp;VA BNI</Text>
-        </View>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => this.selectingPaymentMethod("va_bag")}>
-        <View style={{ elevation: 2, backgroundColor: this.state.payment_method == "va_bag" ? '#1DF318' : 'white', borderRadius  : wp('2.22223%'), marginVertical: wp('1'), paddingHorizontal: wp('2.22223%'), height: wp('10'), justifyContent: 'center' }}>
-          <Text style={{ fontSize: wp('3.5%'), fontWeight: this.state.payment_method == "va_bag" ? 'none' : 'none' }}>
-            <Image source={bagLogo} style={{width: wp('10'), height: wp('5')}} />
-            &nbsp;&nbsp;VA BAG
-          </Text>
-        </View>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => this.selectingPaymentMethod("va_mandiri")}>
-        <View style={{ elevation: 2, backgroundColor: this.state.payment_method == "va_mandiri" ? '#1DF318' : 'white', borderRadius  : wp('2.22223%'), marginVertical: wp('1'), paddingHorizontal: wp('2.22223%'), height: wp('10'), justifyContent: 'center' }}>
-          <Text style={{ fontSize: wp('3.5%'), fontWeight: this.state.payment_method == "va_mandiri" ? 'none' : 'none' }}>
-            <Image source={mandiriLogo} style={{width: wp('10'), height: wp('5')}} />
-            &nbsp;&nbsp;VA Mandiri</Text>
-        </View>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => this.selectingPaymentMethod("indomaret")}>
-        <View style={{ elevation: 2, backgroundColor: this.state.payment_method == "indomaret" ? '#1DF318' : 'white', borderRadius  : wp('2.22223%'), marginVertical: wp('1'), paddingHorizontal: wp('2.22223%'), height: wp('10'), justifyContent: 'center' }}>
-          <Text style={{ fontSize: wp('3.5%'), fontWeight: this.state.payment_method == "indomaret" ? 'none' : 'none' }}>
-            <Image source={indomaretLogo} style={{width: wp('10'), height: wp('5')}} />
-            &nbsp;&nbsp;Indomaret
-          </Text>
-        </View>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => this.selectingPaymentMethod("alfamart")}>
-        <View style={{ elevation: 2, backgroundColor: this.state.payment_method == "alfamart" ? '#1DF318' : 'white', borderRadius  : wp('2.22223%'), marginVertical: wp('1'), paddingHorizontal: wp('2.22223%'), height: wp('10'), justifyContent: 'center' }}>
-          <Text style={{ fontSize: wp('3.5%'), fontWeight: this.state.payment_method == "alfamart" ? 'none' : 'none' }}>
-            <Image source={alfamartLogo} style={{width: wp('10'), height: wp('5')}} />
-            &nbsp;&nbsp;Alfamart</Text>
-        </View>
-        </TouchableOpacity>
-      </View>
-      :
-      null
+        { this.state.selectedOperator != -1 && this.state.selectedProduct != -1 ?
+          <View style={{ flex:1, marginTop: wp('3') }}>
+            <View>
+              <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Payment Method</Text>
+            </View>
+            <TouchableOpacity onPress={() => this.selectingPaymentMethod("va_cimb_niaga")}>
+            <View style={{ elevation: 2, backgroundColor: this.state.payment_method == "va_cimb_niaga" ? '#1DF318' : 'white', borderRadius  : wp('2.22223%'), marginVertical: wp('1'), paddingHorizontal: wp('2.22223%'), height: wp('10'), justifyContent: 'center' }}>
+              <Text style={{ fontSize: wp('3.5%'), fontWeight: this.state.payment_method == "va_cimb_niaga" ? 'none' : 'none' }}>
+                <Image source={cimbniagaLogo} style={{width: wp('10'), height: wp('5')}} />
+                &nbsp;&nbsp;VA Cimb Niaga
+              </Text>
+            </View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => this.selectingPaymentMethod("va_bni")}>
+            <View style={{ elevation: 2, backgroundColor: this.state.payment_method == "va_bni" ? '#1DF318' : 'white', borderRadius  : wp('2.22223%'), marginVertical: wp('1'), paddingHorizontal: wp('2.22223%'), height: wp('10'), justifyContent: 'center' }}>
+              <Text style={{ fontSize: wp('3.5%'), fontWeight: this.state.payment_method == "va_bni" ? 'none' : 'none' }}>
+                <Image source={bniLogo} style={{width: wp('10'), height: wp('5')}} />
+                &nbsp;&nbsp;VA BNI</Text>
+            </View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => this.selectingPaymentMethod("va_bag")}>
+            <View style={{ elevation: 2, backgroundColor: this.state.payment_method == "va_bag" ? '#1DF318' : 'white', borderRadius  : wp('2.22223%'), marginVertical: wp('1'), paddingHorizontal: wp('2.22223%'), height: wp('10'), justifyContent: 'center' }}>
+              <Text style={{ fontSize: wp('3.5%'), fontWeight: this.state.payment_method == "va_bag" ? 'none' : 'none' }}>
+                <Image source={bagLogo} style={{width: wp('10'), height: wp('5')}} />
+                &nbsp;&nbsp;VA BAG
+              </Text>
+            </View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => this.selectingPaymentMethod("va_mandiri")}>
+            <View style={{ elevation: 2, backgroundColor: this.state.payment_method == "va_mandiri" ? '#1DF318' : 'white', borderRadius  : wp('2.22223%'), marginVertical: wp('1'), paddingHorizontal: wp('2.22223%'), height: wp('10'), justifyContent: 'center' }}>
+              <Text style={{ fontSize: wp('3.5%'), fontWeight: this.state.payment_method == "va_mandiri" ? 'none' : 'none' }}>
+                <Image source={mandiriLogo} style={{width: wp('10'), height: wp('5')}} />
+                &nbsp;&nbsp;VA Mandiri</Text>
+            </View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => this.selectingPaymentMethod("indomaret")}>
+            <View style={{ elevation: 2, backgroundColor: this.state.payment_method == "indomaret" ? '#1DF318' : 'white', borderRadius  : wp('2.22223%'), marginVertical: wp('1'), paddingHorizontal: wp('2.22223%'), height: wp('10'), justifyContent: 'center' }}>
+              <Text style={{ fontSize: wp('3.5%'), fontWeight: this.state.payment_method == "indomaret" ? 'none' : 'none' }}>
+                <Image source={indomaretLogo} style={{width: wp('10'), height: wp('5')}} />
+                &nbsp;&nbsp;Indomaret
+              </Text>
+            </View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => this.selectingPaymentMethod("alfamart")}>
+            <View style={{ elevation: 2, backgroundColor: this.state.payment_method == "alfamart" ? '#1DF318' : 'white', borderRadius  : wp('2.22223%'), marginVertical: wp('1'), paddingHorizontal: wp('2.22223%'), height: wp('10'), justifyContent: 'center' }}>
+              <Text style={{ fontSize: wp('3.5%'), fontWeight: this.state.payment_method == "alfamart" ? 'none' : 'none' }}>
+                <Image source={alfamartLogo} style={{width: wp('10'), height: wp('5')}} />
+                &nbsp;&nbsp;Alfamart</Text>
+            </View>
+            </TouchableOpacity>
+          </View>
+          :
+          null
+        }
+      </>
     }
   </ScrollView>
-      <View style={{position: 'relative', bottom: 0 , paddingTop: wp('2.5%'), paddingBottom: wp('5%'), width: '100%', backgroundColor: 'white', elevation: 16, flexDirection: 'row'}}>
-        <View style={{flexDirection: 'column', flex: 1, marginLeft: wp('5%'), justifyContent: 'center'}}>
-          <Text style={{fontWeight: 'bold', fontSize: wp('4%')}}>Total</Text>
-          <Text style={{color: '#1DF318', fontWeight: 'bold', fontSize: wp('4%')}}>Rp {this.state.price == 0 ? 0 : Number(this.state.price) + 500}</Text>
-        </View>
-        <View style={{
-          // justifyContent: 'flex-end'
-          justifyContent: 'center',
-          marginRight: wp('5%')
-        }}>
-          <TouchableOpacity 
-            onPress={() => { this.setState({ visible: true }) }}
-            style={{ backgroundColor: this.state.selectedOperator != -1 && this.state.selectedProduct != -1 && this.state.payment_method != undefined ? '#3269B3': '#ccc', borderRadius: wp('2.223%'), padding: wp('2.5%'), flexDirection: 'row'}} disabled={!(this.state.selectedOperator != -1 && this.state.selectedProduct != -1 && this.state.payment_method != undefined)}>
-            <Image source={logo} style={{marginRight: wp('2.5%')}}/>
-            <Text style={{fontWeight: 'bold', fontSize: wp('5%'), color: 'white'}}>Pay</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-      </>
+  <View style={{position: 'relative', bottom: 0 , paddingTop: wp('2.5%'), paddingBottom: wp('5%'), width: '100%', backgroundColor: 'white', elevation: 16, flexDirection: 'row'}}>
+    <View style={{flexDirection: 'column', flex: 1, marginLeft: wp('5%'), justifyContent: 'center'}}>
+      <Text style={{fontWeight: 'bold', fontSize: wp('4%')}}>Total</Text>
+      <Text style={{color: '#1DF318', fontWeight: 'bold', fontSize: wp('4%')}}>Rp {this.state.price == 0 ? 0 : Number(this.state.price) + 500}</Text>
+    </View>
+    <View style={{
+      // justifyContent: 'flex-end'
+      justifyContent: 'center',
+      marginRight: wp('5%')
+    }}>
+      <TouchableOpacity 
+        onPress={() => { this.setState({ visible: true }) }}
+        style={{ backgroundColor: this.state.selectedOperator != -1 && this.state.selectedProduct != -1 && this.state.payment_method != undefined ? '#3269B3': '#ccc', borderRadius: wp('2.223%'), padding: wp('2.5%'), flexDirection: 'row'}} disabled={!(this.state.selectedOperator != -1 && this.state.selectedProduct != -1 && this.state.payment_method != undefined)}>
+        <Image source={logo} style={{marginRight: wp('2.5%')}}/>
+        <Text style={{fontWeight: 'bold', fontSize: wp('5%'), color: 'white'}}>Pay</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+  </>
     // <View style={{flex: 1, backgroundColor: 'white'}}>
     // <ScrollView contentContainerStyle={{padding: wp('5%')}} refreshControl={<RefreshControl refreshing={this.state.loading} onRefresh={this.refresh}/>}>
     //   <View>

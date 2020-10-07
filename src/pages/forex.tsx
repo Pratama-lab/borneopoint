@@ -241,7 +241,7 @@ class Forex extends Component<any,any>{
             <DialogContent>
               <View style={{ width: wp('85%'), paddingTop: wp('7%'), alignItems: 'center' }}>
                 <TextInput
-                  style={{ width: wp('70%'), height: wp('15%'), backgroundColor: '#FFF', elevation: 4, borderRadius: wp('10%') }}
+                  style={{ width: wp('70%'), height: wp('15%'), backgroundColor: '#FFF', elevation: 4 }}
                   textAlign={'center'}
                   keyboardType={'numeric'}
                 />
