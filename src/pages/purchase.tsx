@@ -29,7 +29,7 @@ class Purchase extends Component<any,any>{
     all_operator: undefined,
     all_product: undefined,
     phone_number: undefined,
-    selectedOperator: -1,
+    selectedOperator: undefined,
     selectedProduct: -1,
     selectedProductIndex: -1,
     hpValue: undefined,
@@ -40,7 +40,7 @@ class Purchase extends Component<any,any>{
     payment_page: true,
     payment_method: undefined,
     visible: false,
-    pulsa: [ {id_pulsa: '1', pulsa_nominal: '1000', pulsa_price: '1800'} ],
+    after4digit: false
   }
 
 
@@ -68,32 +68,58 @@ class Purchase extends Component<any,any>{
     // }
   }
   refresh = () => this.componentDidMount
-  onhpChangeValue = (text) => {
-    this.setState({ hpValue: text })
+  onChangePhoneNumber = (text) => {
+    let prefixes = {
+      'indosat1' : '0814','indosat2' : '0815','indosat3' : '0816','indosat4' : '0855','indosat5' : '0856','indosat6' : '0857','indosat7' : '0858',
+      'xl1' : '0817','xl2' : '0818','xl3' : '0819','xl4' : '0859','xl5' : '0878','xl6' : '0877',
+      'axis1' : '0838','axis2' : '0837','axis3' : '0831','axis4' : '0832',
+      'telkomsel1' : '0812','telkomsel2' : '0813','telkomsel3' : '0852','telkomsel4' : '0853','telkomsel5' : '0821','telkomsel6' : '0823','telkomsel7' : '0822','telkomsel8' : '0851',
+      'smartfren1' : '0881','smartfren2' : '0882','smartfren3' : '0883','smartfren4' : '0884','smartfren5' : '0885','smartfren6' : '0886','smartfren7' : '0887','smartfren8' : '0888',
+      'three1' : '0896','three2' : '0897','three3' : '0898','three4' : '0899','three5' : '0895'
+    };
+    // console.log(prefixes)
+    if (text.length === 4 && this.state.after4digit === false) {
+      for(var k in prefixes) {
+        if (text.substr(0, 4) === prefixes[k]) {
+          axios.get('https://borneopoint.co.id/public/api/get_all_product', {params:{
+            itemType: this.props.route.params.itemType,
+            operator: k.slice(0, -1)
+          }})
+          .then(data => {
+            this.setState({
+              selectedProduct: -1,
+              loading: false,
+              all_product: data.data,
+              productEnabled: true,
+              price: 0,
+              payment_method: undefined,
+              selectedOperator: k.slice(0, -1),
+              phone_number: text,
+              after4digit: true
+            })
+            console.log(text.substr(0, 4))
+          }).catch(e => console.log(e))
+          break;
+        }
+      }
+    }else if (text.length < 4){
+      this.setState({
+        selectedOperator: undefined,
+        all_product: undefined,
+        after4digit: false
+      })
+    }
+  }
+
+  getProduct(){
+
   }
 
   selectingOperator = async (itemValue) => {
     this.setState({ selectedOperator: itemValue, productEnabled: false})
     if (itemValue !== -1){
       this.setState({ loading: true})
-      axios.get('https://borneopoint.co.id/public/api/get_all_product', {params:{
-        itemType: this.props.route.params.itemType,
-        operator: itemValue
-      }})
-      .then(data => {
-        if(typeof data === 'undefined'){
-          this.selectedOperator(itemValue)
-        } else {
-          this.setState({
-            selectedProduct: -1,
-            loading: false,
-            all_product: data.data,
-            productEnabled: true,
-            price: 0,
-            payment_method: undefined
-          })
-        }
-      }).catch(e => console.log(e))
+      
     } else { this.setState({all_product: undefined, selectedProduct: -1, price: 0, payment_method: undefined}) }
   }
 
@@ -250,12 +276,13 @@ class Purchase extends Component<any,any>{
     { this.props.route.params.itemType === 'pulsa' ?
       <View>
         <View>
-          <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>No. Tujuan</Text>
+          <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>No. Tujuan 
+          {this.state.selectedOperator !== undefined ? ' ('+this.state.selectedOperator+')' : null }</Text>
         </View>
         <View style={{ flexDirection: 'row' }}>
           <View style={{ borderBottomWidth: 2, flexDirection: 'row' }}>
             <TextInput
-              onChangeText={(text) => this.setState({phone_number: text})}
+              onChangeText={(text) => this.onChangePhoneNumber(text)}
               placeholder="Your Phone Number"
               style={{ fontSize: 16, width: wp('60%') }}
               keyboardType='phone-pad'
@@ -275,11 +302,11 @@ class Purchase extends Component<any,any>{
           <Text style={{ fontWeight: 'bold', fontSize: wp('5%') }}>Nominal</Text>
         </View>
         <FlatList
-          data={this.state.pulsa}
+          data={this.state.all_product}
           keyExtractor={item => item.id_pulsa}
           renderItem={({item}) => (
             <View>
-              <TouchableOpacity style={{ backgroundColor: '#FFF', elevation: 2, borderRadius: wp('2.3%'), width: wp('90%'), height: wp('15%'), flexDirection: 'row' }}>
+              <TouchableOpacity style={{ marginBottom: wp('3'), backgroundColor: '#FFF', elevation: 2, borderRadius: wp('2.3%'), width: wp('90%'), height: wp('15%'), flexDirection: 'row' }}>
                 <View style={{ marginLeft: wp('5%'), width: wp('40%') }}>
                   <Text style={{ fontSize: 20, marginTop: wp('3%') }}>{item.pulsa_nominal}</Text>
                 </View>

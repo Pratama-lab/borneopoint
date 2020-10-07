@@ -35,6 +35,7 @@ class Home extends Component<any,any>{
       loading: true,
       infoAndPromotions: null,
       accountInfo: undefined,
+      saldo: 0,
       deskripsi: '',
       description: [{ 'desc': 'hai cok' }, { 'desc': 'hai cok' }, { 'desc': 'hai cok' }, { 'desc': 'hai cok' }, { 'desc': 'hai cok' }]
     }
@@ -90,6 +91,7 @@ class Home extends Component<any,any>{
       // alert(JSON.stringify(resp.data))
       this.setState({
         name: resp.data.name,
+        saldo: resp.data.saldo,
         loading: false
       })
     })
@@ -158,25 +160,25 @@ class Home extends Component<any,any>{
               <View style={styles.usernameContainer}>
                 <Text style={styles.userText} numberOfLines={1}>{capitalizeWords(this.state.name)}</Text>
               </View>
-              {/*<View style={styles.walletContainer}>
-                              <Text style={styles.walletText}>Rp {formatRupiah(this.state.accountInfo?.wallet?.toString(), undefined)},00</Text>
-                            </View>*/}
+              <View style={styles.walletContainer}>
+                <Text style={styles.walletText}>Rp {formatRupiah(this.state.saldo.toString(), undefined)},00</Text>
+              </View>
             </View>
           </View>
-          {/*<View style={styles.walletOperationContainer}>
-                      <TouchableOpacity style={styles.walletItemContainer} onPress={() => this.goTo('TopUp')}>
-                        <Image source={topUp} style={styles.walletItemImage}/>
-                        <Text style={styles.walletItemText}>TopUp</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity style={styles.walletItemContainer} onPress={() => this.goTo('Transfer')}>
-                        <Image source={transfer} style={styles.walletItemImage}/>
-                        <Text style={styles.walletItemText}>Transfer</Text>
-                      </TouchableOpacity>
-                       <TouchableOpacity style={styles.walletItemContainer} onPress={() => this.goTo('Withdraw')}>
-                        <Image source={withdraw} style={styles.walletItemImage}/>
-                        <Text style={styles.walletItemText}>Withdraw</Text>
-                      </TouchableOpacity> 
-                    </View>*/}
+          <View style={styles.walletOperationContainer}>
+            <TouchableOpacity style={styles.walletItemContainer} onPress={() => this.goTo('TopUp')}>
+              <Image source={topUp} style={styles.walletItemImage}/>
+              <Text style={styles.walletItemText}>TopUp</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.walletItemContainer} onPress={() => this.goTo('Transfer')}>
+              <Image source={transfer} style={styles.walletItemImage}/>
+              <Text style={styles.walletItemText}>Transfer</Text>
+            </TouchableOpacity>
+             {/*<TouchableOpacity style={styles.walletItemContainer} onPress={() => this.goTo('Withdraw')}>
+                           <Image source={withdraw} style={styles.walletItemImage}/>
+                           <Text style={styles.walletItemText}>Withdraw</Text>
+                         </TouchableOpacity>*/}
+          </View>
             {/*<TouchableOpacity style={styles.qrButton}>
             <Image source={rqr} style={styles.qrImage}/>
             <Text style={styles.scanText}>Scan</Text>

@@ -24,6 +24,14 @@ export default StyleSheet.create({
     alignItems: 'center',
     borderRadius: wp('2.22223%')
   },
+  bankItemSelected: {
+    flexDirection: 'row',
+    backgroundColor: 'skyblue',
+    elevation: 2,
+    padding: wp('2%'),
+    alignItems: 'center',
+    borderRadius: wp('2.22223%')
+  },
   bankLogo: {
     marginRight: wp('2.5%'),
     marginLeft: wp('5%')
