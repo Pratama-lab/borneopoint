@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View, Text, Image, TouchableOpacity, TextInput, Alert } from 'react-native'
+import { View, Text, Image, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native'
 import styles from '../styles/topUp'
 import { widthPercentageToDP } from 'react-native-responsive-screen'
 import validateAndConvertNumber from '../functions/validateAndConvertNumber'
@@ -12,6 +12,7 @@ const bcaLogo = require('../assets/icons/bca.png')
 const mandiriLogo = require('../assets/icons/mandiri.png')
 const cimbLogo = require('../assets/icons/cimb.png')
 const bniLogo = require('../assets/icons/bni.png')
+const bagLogo = require('../assets/icons/bni.png')
 const money = require('../assets/icons/money.png')
 
 const imageLogoSwitch = (type:string) => {
@@ -24,6 +25,8 @@ const imageLogoSwitch = (type:string) => {
       return cimbLogo
     case 'bni':
       return bniLogo
+    case 'bag':
+      return bagLogo
     default:
       return money
   }
@@ -39,7 +42,7 @@ class TopUp extends Component<any,any>{
   }
 
   componentDidMount = async () => {
-    
+    this.props.navigation.navigate('ongoingPayment');
   }
 
   onChamgeAmount = (text) => {
@@ -58,24 +61,26 @@ class TopUp extends Component<any,any>{
 
   confirmTopUp = async () => {
     if (this.state.amount !== '' && this.state.amount !== undefined){
-      if(this.state.payment_method != undefined){
+      if(this.state.payment_method !== undefined){
         this.setState({loading: true})
         const check_login = await AsyncStorage.getItem('@id_login');
-        axios.get('https://borneopoint.co.id/public/api/get_user', {params: {
+        axios.get('https://borneopoint.co.id/api/get_user', {params: {
           id_login: check_login
         }})
         .then(resp => {
-          axios.get('https://borneopoint.co.id/public/api/topup_va_cimb_niaga', {params:{
-            user_id: resp.data.id_login,
-            name: resp.data.name,
-            email: resp.data.email,
+          axios.post('https://borneopoint.co.id/api/borneo_topup', {
+            id_login: resp.data.id_login,
             payment_method: this.state.payment_method,
             amount: this.state.amount
-          }})
+          })
           .then(resp => {
             this.setState({loading: false})
-            console.log(resp.data)
-          })
+            if(typeof resp.data.status !== 'undefined' && resp.data.status != 200 && typeof resp.data.message !== 'undefined'){
+              Alert.alert('',resp.data.message)
+            }else{
+              this.props.navigation.navigate('ongoingPayment');
+            }
+          }).catch(e => console.log("confirmTOPUP ===> ", e.message))
         })
         .catch(err => {
           console.log('Get User : '+err)
@@ -149,6 +154,7 @@ class TopUp extends Component<any,any>{
   }
 
   render = () => 
+  <ScrollView>
     <View style={styles.pageContainer}>
       <View style={styles.optionSectionContainer}>
         <Text style={styles.optionTitle}>Amount</Text>
@@ -158,25 +164,40 @@ class TopUp extends Component<any,any>{
       </View>
       <View style={styles.optionSectionContainer}>
         <Text style={styles.optionTitle}>Bank Transfer</Text>
-        <TouchableOpacity style={this.switchSelected('transfer_bca')} onPress={() => this.setState({payment_method: 'transfer_bca'})}>
+        <TouchableOpacity style={this.switchSelected('transfer_bca')} onPress={() => this.setState({payment_method: 'bca'})}>
           <Image source={imageLogoSwitch('bca')} style={styles.bankLogo} />
           <Text style={styles.bankText}>BCA</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.optionSectionContainer}>
         <Text style={styles.optionTitle}>Virtual Account</Text>
-          <TouchableOpacity style={this.switchSelected('va_cimb_niaga')} onPress={() => this.setState({payment_method: 'va_cimb_niaga'})}>
-            <Image source={imageLogoSwitch('cimb')} style={styles.bankLogo} />
-            <Text style={styles.bankText}>CIMB</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={this.switchSelected('va_mandiri')} onPress={() => this.setState({payment_method: 'va_mandiri'})}>
-            <Image source={imageLogoSwitch('mandiri')} style={styles.bankLogo} />
-            <Text style={styles.bankText}>Mandiri</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={this.switchSelected('va_bni')} onPress={() => this.setState({payment_method: 'va_bni'})}>
-            <Image source={imageLogoSwitch('bni')} style={styles.bankLogo} />
-            <Text style={styles.bankText}>BNI</Text>
-          </TouchableOpacity>
+        <TouchableOpacity style={this.switchSelected('va_cimb_niaga')} onPress={() => this.setState({payment_method: 'cimb'})}>
+          <Image source={imageLogoSwitch('cimb')} style={styles.bankLogo} />
+          <Text style={styles.bankText}>CIMB</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={this.switchSelected('va_mandiri')} onPress={() => this.setState({payment_method: 'mandiri'})}>
+          <Image source={imageLogoSwitch('mandiri')} style={styles.bankLogo} />
+          <Text style={styles.bankText}>Mandiri</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={this.switchSelected('va_bni')} onPress={() => this.setState({payment_method: 'bni'})}>
+          <Image source={imageLogoSwitch('bni')} style={styles.bankLogo} />
+          <Text style={styles.bankText}>BNI</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={this.switchSelected('va_bni')} onPress={() => this.setState({payment_method: 'bag'})}>
+          <Image source={imageLogoSwitch('bag')} style={styles.bankLogo} />
+          <Text style={styles.bankText}>BAG</Text>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.optionSectionContainer}>
+        <Text style={styles.optionTitle}>Physical Merchants</Text>
+        <TouchableOpacity style={this.switchSelected('va_bni')} onPress={() => this.setState({payment_method: 'indomaret'})}>
+          <Image source={imageLogoSwitch('bag')} style={styles.bankLogo} />
+          <Text style={styles.bankText}>Indomaret</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={this.switchSelected('va_bni')} onPress={() => this.setState({payment_method: 'alfamart'})}>
+          <Image source={imageLogoSwitch('bag')} style={styles.bankLogo} />
+          <Text style={styles.bankText}>Alfamart</Text>
+        </TouchableOpacity>
       </View>
       <TouchableOpacity
         style={{alignSelf: 'center',
@@ -195,6 +216,7 @@ class TopUp extends Component<any,any>{
         }}>TopUp</Text>
       </TouchableOpacity>
     </View>
+  </ScrollView>
 }
 
 export default (props) => 

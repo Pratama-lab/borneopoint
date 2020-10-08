@@ -84,7 +84,7 @@ class Home extends Component<any,any>{
       // alert('berhasil')
     }
 
-    axios.get('https://borneopoint.co.id/public/api/get_user', {params: {
+    axios.get('https://borneopoint.co.id/api/get_user', {params: {
       id_login: check_login
     }})
     .then(resp => {
@@ -116,7 +116,7 @@ class Home extends Component<any,any>{
   infoAndPromotion = (name,description):any => {
     this.props.navigation.navigate('InfoAndPromotion',{ name, description})
   }
-  render = () => 
+  render = () =>
   <>
     {this.state.loading ?
       <View style={[ styless.container_loading, styless.horizontal_loading ]}>

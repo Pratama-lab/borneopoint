@@ -162,6 +162,16 @@ class Purchase extends Component<any,any>{
     }catch(error){ console.debug(error) }
   }
 
+  format = (x) => {
+    if(/^\d+$/.test(x.toString().trim()) === true){
+      var parts = x.toString().split(".");
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      return parts.join(".");
+    }else{
+      return x;
+    }
+  }
+
   // handlePay = async () => {
   //   this.setState({loading: true})
   //   if (this.state.payment_method === "va_cimb_niaga"){
@@ -298,24 +308,26 @@ class Purchase extends Component<any,any>{
           </View>
         </View>
 
-        <View style={{ marginTop: wp('5%') }}>
+        <View style={{ marginTop: wp('5%'), marginBottom: wp('3%') }}>
           <Text style={{ fontWeight: 'bold', fontSize: wp('5%') }}>Nominal</Text>
         </View>
         <FlatList
           data={this.state.all_product}
           keyExtractor={item => item.id_pulsa}
-          renderItem={({item}) => (
-            <View>
-              <TouchableOpacity style={{ marginBottom: wp('3'), backgroundColor: '#FFF', elevation: 2, borderRadius: wp('2.3%'), width: wp('90%'), height: wp('15%'), flexDirection: 'row' }}>
-                <View style={{ marginLeft: wp('5%'), width: wp('40%') }}>
-                  <Text style={{ fontSize: 20, marginTop: wp('3%') }}>{item.pulsa_nominal}</Text>
-                </View>
-                <View style={{ marginLeft: wp('5%'), width: wp('35%'), alignItems: 'flex-end' }}>
-                  <Text style={{ fontSize: 20, marginTop: wp('3%') }}>Rp {item.pulsa_price}</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          )}
+          renderItem={({item}) => {
+            if(/^\d+$/.test(item.pulsa_nominal.toString().trim()) === true){
+            return (
+              <View>
+                <TouchableOpacity style={{ padding: wp('3'), marginBottom: wp('2'), backgroundColor: '#FFF', elevation: 2, borderRadius: wp('2.3%'), width: wp('90%'), flexDirection: 'row' }}>
+                  <View style={{ marginLeft: wp('2%'), justifyContent: 'center', width: wp('40%') }}>
+                    <Text style={{ fontSize: 17, fontFamily: 'Ubuntu-Regular' }}>{this.format(item.pulsa_nominal)}</Text>
+                  </View>
+                  <View style={{ marginLeft: wp('5%'), justifyContent: 'center', width: wp('35%'), alignItems: 'flex-end' }}>
+                    <Text style={{fontFamily: 'Ubuntu-Medium', fontSize: 17, color: '#3269B3' }}>Rp {this.format(item.pulsa_price)}</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            )}}}
         />
       </View>
       :
