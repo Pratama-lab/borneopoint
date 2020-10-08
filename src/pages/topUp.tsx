@@ -12,7 +12,6 @@ const bcaLogo = require('../assets/icons/bca.png')
 const mandiriLogo = require('../assets/icons/mandiri.png')
 const cimbLogo = require('../assets/icons/cimb.png')
 const bniLogo = require('../assets/icons/bni.png')
-const bagLogo = require('../assets/icons/bni.png')
 const money = require('../assets/icons/money.png')
 
 const imageLogoSwitch = (type:string) => {
@@ -25,8 +24,6 @@ const imageLogoSwitch = (type:string) => {
       return cimbLogo
     case 'bni':
       return bniLogo
-    case 'bag':
-      return bagLogo
     default:
       return money
   }
@@ -42,7 +39,6 @@ class TopUp extends Component<any,any>{
   }
 
   componentDidMount = async () => {
-    this.props.navigation.navigate('ongoingPayment');
   }
 
   onChamgeAmount = (text) => {
@@ -78,7 +74,7 @@ class TopUp extends Component<any,any>{
             if(typeof resp.data.status !== 'undefined' && resp.data.status != 200 && typeof resp.data.message !== 'undefined'){
               Alert.alert('',resp.data.message)
             }else{
-              this.props.navigation.navigate('ongoingPayment');
+              this.props.navigation.navigate('ongoingPayment', {method: this.state.payment_method});
             }
           }).catch(e => console.log("confirmTOPUP ===> ", e.message))
         })
@@ -184,24 +180,25 @@ class TopUp extends Component<any,any>{
           <Text style={styles.bankText}>BNI</Text>
         </TouchableOpacity>
         <TouchableOpacity style={this.switchSelected('va_bni')} onPress={() => this.setState({payment_method: 'bag'})}>
-          <Image source={imageLogoSwitch('bag')} style={styles.bankLogo} />
+          <Image source={imageLogoSwitch('bni')} style={styles.bankLogo} />
           <Text style={styles.bankText}>BAG</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.optionSectionContainer}>
-        <Text style={styles.optionTitle}>Physical Merchants</Text>
+        <Text style={styles.optionTitle}>Physical Merchant</Text>
         <TouchableOpacity style={this.switchSelected('va_bni')} onPress={() => this.setState({payment_method: 'indomaret'})}>
-          <Image source={imageLogoSwitch('bag')} style={styles.bankLogo} />
+          <Image source={imageLogoSwitch('bni')} style={styles.bankLogo} />
           <Text style={styles.bankText}>Indomaret</Text>
         </TouchableOpacity>
         <TouchableOpacity style={this.switchSelected('va_bni')} onPress={() => this.setState({payment_method: 'alfamart'})}>
-          <Image source={imageLogoSwitch('bag')} style={styles.bankLogo} />
+          <Image source={imageLogoSwitch('bni')} style={styles.bankLogo} />
           <Text style={styles.bankText}>Alfamart</Text>
         </TouchableOpacity>
       </View>
       <TouchableOpacity
         style={{alignSelf: 'center',
           marginTop: widthPercentageToDP('5%'),
+          marginBottom: widthPercentageToDP('5%'),
           width: widthPercentageToDP('64.44444%'),
           aspectRatio: 232/48,
           backgroundColor: '#3269B3',
