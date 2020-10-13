@@ -6,6 +6,7 @@ import { widthPercentageToDP  as wp} from 'react-native-responsive-screen';
 import formatRupiah from '../functions/formatRupiah';
 import axios from 'axios'
 import Dialog, { DialogFooter, DialogButton, DialogContent, DialogTitle } from 'react-native-popup-dialog';
+import { selectContactPhone } from 'react-native-select-contact'
 
 import { AuthContext } from '../context'
 
@@ -68,48 +69,76 @@ class Purchase extends Component<any,any>{
     // }
   }
   refresh = () => this.componentDidMount
-  onChangePhoneNumber = (text) => {
-    let prefixes = {
-      'indosat1' : '0814','indosat2' : '0815','indosat3' : '0816','indosat4' : '0855','indosat5' : '0856','indosat6' : '0857','indosat7' : '0858',
-      'xl1' : '0817','xl2' : '0818','xl3' : '0819','xl4' : '0859','xl5' : '0878','xl6' : '0877',
-      'axis1' : '0838','axis2' : '0837','axis3' : '0831','axis4' : '0832',
-      'telkomsel1' : '0812','telkomsel2' : '0813','telkomsel3' : '0852','telkomsel4' : '0853','telkomsel5' : '0821','telkomsel6' : '0823','telkomsel7' : '0822','telkomsel8' : '0851',
-      'smartfren1' : '0881','smartfren2' : '0882','smartfren3' : '0883','smartfren4' : '0884','smartfren5' : '0885','smartfren6' : '0886','smartfren7' : '0887','smartfren8' : '0888',
-      'three1' : '0896','three2' : '0897','three3' : '0898','three4' : '0899','three5' : '0895'
-    };
-    // console.log(prefixes)
-    if (text.length === 4 && this.state.after4digit === false) {
-      for(var k in prefixes) {
-        if (text.substr(0, 4) === prefixes[k]) {
-          axios.get('https://borneopoint.co.id/public/api/get_all_product', {params:{
-            itemType: this.props.route.params.itemType,
-            operator: k.slice(0, -1)
-          }})
-          .then(data => {
-            this.setState({
-              selectedProduct: -1,
-              loading: false,
-              all_product: data.data,
-              productEnabled: true,
-              price: 0,
-              payment_method: undefined,
-              selectedOperator: k.slice(0, -1),
-              phone_number: text,
-              after4digit: true
-            })
-            console.log(text.substr(0, 4))
-          }).catch(e => console.log(e))
-          break;
+    onChangePhoneNumber = (text, fromContact = false) => {
+      this.setState({phone_number: text})
+      let prefixes = {
+        'indosat1' : '0814','indosat2' : '0815','indosat3' : '0816','indosat4' : '0855','indosat5' : '0856','indosat6' : '0857','indosat7' : '0858',
+        'xl1' : '0817','xl2' : '0818','xl3' : '0819','xl4' : '0859','xl5' : '0878','xl6' : '0877',
+        'axis1' : '0838','axis2' : '0837','axis3' : '0831','axis4' : '0832',
+        'telkomsel1' : '0812','telkomsel2' : '0813','telkomsel3' : '0852','telkomsel4' : '0853','telkomsel5' : '0821','telkomsel6' : '0823','telkomsel7' : '0822','telkomsel8' : '0851',
+        'smartfren1' : '0881','smartfren2' : '0882','smartfren3' : '0883','smartfren4' : '0884','smartfren5' : '0885','smartfren6' : '0886','smartfren7' : '0887','smartfren8' : '0888',
+        'three1' : '0896','three2' : '0897','three3' : '0898','three4' : '0899','three5' : '0895'
+      };
+      // console.log(prefixes)
+      if (fromContact === false){
+        if (text.length === 4 && this.state.after4digit === false) {
+          for(var k in prefixes) {
+            if (text.substr(0, 4) === prefixes[k]) {
+              axios.get('https://borneopoint.co.id/public/api/get_all_product', {params:{
+                itemType: this.props.route.params.itemType,
+                operator: k.slice(0, -1)
+              }})
+              .then(data => {
+                this.setState({
+                  selectedProduct: -1,
+                  loading: false,
+                  all_product: data.data,
+                  productEnabled: true,
+                  price: 0,
+                  payment_method: undefined,
+                  selectedOperator: k.slice(0, -1),
+                  phone_number: text,
+                  after4digit: true
+                })
+                console.log(text.substr(0, 4))
+              }).catch(e => console.log(e))
+              break;
+            }
+          }
+        }else if (text.length < 4){
+          this.setState({
+            selectedOperator: undefined,
+            all_product: undefined,
+            after4digit: false
+          })
+        }
+      }else{
+        for(var k in prefixes) {
+          if (text.substr(0, 4) === prefixes[k]) {
+            axios.get('https://borneopoint.co.id/public/api/get_all_product', {params:{
+              itemType: this.props.route.params.itemType,
+              operator: k.slice(0, -1)
+            }})
+            .then(data => {
+              this.setState({
+                selectedProduct: -1,
+                loading: false,
+                all_product: data.data,
+                productEnabled: true,
+                price: 0,
+                payment_method: undefined,
+                selectedOperator: k.slice(0, -1),
+                phone_number: text,
+                after4digit: true
+              })
+              console.log(text.substr(0, 4))
+            }).catch(e => console.log(e))
+            break;
+          }
         }
       }
-    }else if (text.length < 4){
-      this.setState({
-        selectedOperator: undefined,
-        all_product: undefined,
-        after4digit: false
-      })
+      
     }
-  }
 
   getProduct(){
 
@@ -170,6 +199,20 @@ class Purchase extends Component<any,any>{
     }else{
       return x;
     }
+  }
+
+  getPhoneNumber = () => {
+    return selectContactPhone()
+    .then(selection => {
+      if (!selection) {
+          return null;
+      }
+      
+      let { selectedPhone } = selection;
+      const number = selectedPhone.number.replace('+','0').replace(/ |62|-/g, '').trim();
+      this.setState({phone_number: number})
+      this.onChangePhoneNumber(number, true)
+    });
   }
 
   // handlePay = async () => {
@@ -296,13 +339,14 @@ class Purchase extends Component<any,any>{
               placeholder="Your Phone Number"
               style={{ fontSize: 16, width: wp('60%') }}
               keyboardType='phone-pad'
+              value={this.state.phone_number}
             />
             <View style={{ alignItems: 'center', alignContent: 'center', width: wp('13%') }}>
               <Image source={logo} style={{ marginTop: wp('2%') }} />
             </View>
           </View>
           <View style={{ alignItems: 'center', alignContent: 'center', marginLeft: wp('3%'), width: wp('13%') }}>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={this.getPhoneNumber}>
               <Image source={require('../assets/icons/address-book.png')} style={{ width: wp('10%'), height: wp('10%'), marginTop: wp('2%') }} />
             </TouchableOpacity>
           </View>

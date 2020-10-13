@@ -154,7 +154,7 @@ class TopUp extends Component<any,any>{
     <View style={styles.pageContainer}>
       <View style={styles.optionSectionContainer}>
         <Text style={styles.optionTitle}>Amount</Text>
-        <View style={{ borderRadius: widthPercentageToDP('2.222223%'), elevation: 2, marginTop: widthPercentageToDP('3%')}}>
+        <View style={{ borderRadius: widthPercentageToDP('2.222223%'), elevation: 2, marginTop: widthPercentageToDP('3%'), backgroundColor: '#FFF' }}>
           <TextInput  placeholder={'Enter TopUp amount'}  placeholderTextColor={'#ccc'} keyboardType={'numeric'} onChangeText={this.onChamgeAmount} onEndEditing={() => {}} style={{ paddingLeft: widthPercentageToDP('5%'), fontSize: widthPercentageToDP('4%')}}/>
         </View>
       </View>

@@ -69,10 +69,6 @@ class Home extends Component<any,any>{
     //   )
     // }
 
-    this.setState({
-      loading: true,
-    })
-
     const check_login = await AsyncStorage.getItem('@id_login');
 
     // alert(check_login)
@@ -91,6 +87,7 @@ class Home extends Component<any,any>{
       // alert(JSON.stringify(resp.data))
       this.setState({
         name: resp.data.name,
+        profile: resp.data.profile,
         saldo: resp.data.saldo,
         loading: false
       })
@@ -142,18 +139,20 @@ class Home extends Component<any,any>{
           <View style={styles.profileWalletContainer}>
             <View style={styles.profilePictureContainer}>
               {
-                this.state.photo === undefined ? 
+                this.state.profile === undefined ? 
                   <Image source={person}/>
                   :
-                  <Image source={{
-                    uri: `https://borneopoint.co.id/public/profilePicture/${this.state.photo}?${Math.floor(Math.random() * 100 * 100)}`,
-                    cache: 'reload'
-                  }} style={{
-                    width       : '100%',
-                    aspectRatio : 1/1,
-                    height      : '100%',
-                    borderRadius: 120
-                }}/>
+                  <Image
+                    source={{
+                      uri: 'https://borneopoint.co.id/public/storage/profile/'+this.state.profile
+                    }}
+                    style={{
+                      width       : '100%',
+                      aspectRatio : 1/1,
+                      height      : '100%',
+                      borderRadius: 120
+                    }}
+                  />
               }
             </View>
             <View style={styles.userContainer}>
@@ -226,22 +225,20 @@ class Home extends Component<any,any>{
       <View style={styles.infoAndPromotionContainer}>
         <Text style={styles.infoAndPromotionText}>Info & Promotion</Text>
         <View style={{ marginTop: widthPercentageToDP('2%'), marginLeft: widthPercentageToDP('1%'), marginRight: widthPercentageToDP('1%') }}>
-          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-            <FlatList
-              data={this.state.infoAndPromotion}
-              keyExtractor={item => item.id}
-              horizontal={true}
-              extraData={this.state}
-              renderItem={({item}) => (
-                <TouchableOpacity style={{ width: widthPercentageToDP('50%'), borderRadius: widthPercentageToDP('2.5%'), elevation: 3, marginLeft: widthPercentageToDP('5%'), backgroundColor: 'white', marginTop: widthPercentageToDP('2%'), marginBottom: widthPercentageToDP('1%'), marginRight: widthPercentageToDP('1%'), alignItems: 'center' }}>
-                  <FastImage source={{ uri: url+item.images}} style={{ width: '100%', height: heightPercentageToDP('20%'), borderRadius: widthPercentageToDP('2.5%') }} />
-                  <View style={{ marginLeft: widthPercentageToDP('2%'), marginRight: widthPercentageToDP('2%'), marginBottom: widthPercentageToDP('2%'), marginTop: widthPercentageToDP('2%') }}>
-                    <Text numberOfLines={5}>{item.description}</Text>
-                  </View>
-                </TouchableOpacity>
-              )}
-            />
-          </ScrollView>
+          <FlatList
+            data={this.state.infoAndPromotion}
+            keyExtractor={item => item.id}
+            horizontal={true}
+            extraData={this.state}
+            renderItem={({item}) => (
+              <TouchableOpacity style={{ width: widthPercentageToDP('50%'), borderRadius: widthPercentageToDP('2.5%'), elevation: 3, marginLeft: widthPercentageToDP('5%'), backgroundColor: 'white', marginTop: widthPercentageToDP('2%'), marginBottom: widthPercentageToDP('1%'), marginRight: widthPercentageToDP('1%'), alignItems: 'center' }}>
+                <FastImage source={{ uri: url+item.images}} style={{ width: '100%', height: heightPercentageToDP('20%'), borderRadius: widthPercentageToDP('2.5%') }} />
+                <View style={{ marginLeft: widthPercentageToDP('2%'), marginRight: widthPercentageToDP('2%'), marginBottom: widthPercentageToDP('2%'), marginTop: widthPercentageToDP('2%') }}>
+                  <Text numberOfLines={5}>{item.description}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          />
         </View>
       </View>
     </ScrollView>

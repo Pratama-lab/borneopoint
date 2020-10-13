@@ -59,20 +59,18 @@ class Deals extends Component{
         :
         null
       }
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={{ width: '100%', alignItems: 'center' }}>
-          <FlatList
-            data={this.state.all_deals}
-            keyExtractor={item => item.deals_id}
-            extraData={this.state}
-            renderItem={({item}) => (
-              <TouchableOpacity onPress={() => this.props.navigation.navigate('dealDetail', {deals_id: item.deals_id})} style={{ width: wp('90%'), height: heightPercentageToDP('30%'), marginTop: wp('2%'), backgroundColor: 'white', elevation: 4, borderRadius: wp('2.5%') }}>
-                <FastImage source={{ uri: url+item.deals_image }} style={{ width: '100%', height: '100%', borderRadius: wp('2.5%') }} />
-              </TouchableOpacity>
-            )}
-          />
-        </View>
-      </ScrollView>
+      <View style={{ width: '100%', alignItems: 'center' }}>
+        <FlatList
+          data={this.state.all_deals}
+          keyExtractor={item => item.deals_id}
+          extraData={this.state}
+          renderItem={({item}) => (
+            <TouchableOpacity onPress={() => this.props.navigation.navigate('dealDetail', {deals_id: item.deals_id})} style={{ width: wp('90%'), height: heightPercentageToDP('30%'), marginTop: wp('2%'), backgroundColor: 'white', elevation: 4, borderRadius: wp('2.5%') }}>
+              <FastImage source={{ uri: url+item.deals_image }} style={{ width: '100%', height: '100%', borderRadius: wp('2.5%') }} />
+            </TouchableOpacity>
+          )}
+        />
+      </View>
     </>
 }
 

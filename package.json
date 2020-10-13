@@ -31,7 +31,6 @@
     "react-native": "0.62.2",
     "react-native-camera": "^3.40.0",
     "react-native-cli": "^2.0.1",
-    "react-native-contacts-wrapper": "^0.2.4",
     "react-native-fast-image": "^8.3.2",
     "react-native-fbsdk": "^2.0.0",
     "react-native-gesture-handler": "^1.6.1",
@@ -42,6 +41,7 @@
     "react-native-responsive-screen": "^1.4.1",
     "react-native-safe-area-context": "^3.0.2",
     "react-native-screens": "^2.8.0",
+    "react-native-select-contact": "^1.5.0",
     "react-native-svg": "^12.1.0"
   },
   "devDependencies": {

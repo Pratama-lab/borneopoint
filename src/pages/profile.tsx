@@ -5,6 +5,7 @@ import QRCode from 'react-native-qrcode-svg'
 import capitalizeWords from '../functions/capitalizeWords'
 import { getAccountInfo, editProfile } from '../api'
 import { RNCamera } from 'react-native-camera';
+import FastImage from 'react-native-fast-image'
 
 import styles from '../styles/profile'
 import { AuthContext } from '../context'
@@ -34,12 +35,14 @@ class Profile extends Component<IProfileProps>{
       accountInfo: undefined,
       inputName: undefined,
       inputEmail: undefined,
+      inputPhone: undefined,
       camera: false,
       pictureCacheUri: undefined,
       name: '',
       email: '',
       fileName: null,
       file_image: null,
+      data: null,
     }
   }
   camera
@@ -86,15 +89,13 @@ class Profile extends Component<IProfileProps>{
     }})
     .then(resp => {
       // alert(JSON.stringify(resp))
-      if (resp.data === 'Anda Belum Terdaftar') {
-        console.log('Belum Terdaftar')
-      } else {
-        this.setState({
-          loading: false,
-          name: resp.data.name,
-          email: resp.data.email
-        })
-      }
+      this.setState({
+        loading: false,
+        name: resp.data.name,
+        email: resp.data.email,
+        profile: resp.data.profile,
+        phone: resp.data.phone,
+      })
     })
   }
   goTo = (routeName) => {
@@ -153,26 +154,46 @@ class Profile extends Component<IProfileProps>{
 
     const check_login = await AsyncStorage.getItem('@id_login')
 
-    axios.get('https://borneopoint.co.id/public/api/update_user', {params: {
-      id_login: check_login,
-      name: this.state.inputName,
-      email: this.state.inputEmail,
-    }})
-    .then(resp => {
-      // alert(JSON.stringify(resp))
-      this.componentDidMount()
+    let formData = new FormData();
+
+    if(this.state.data !== null) {
+      formData.append("profile", {
+        name: new Date().getTime()+'_'+check_login+'.jpg',
+        uri: this.state.data.uri,
+        type: 'image/jpg'
+      });
+    }
+
+    formData.append("id_login", check_login);
+    formData.append("name", this.state.inputName);
+    formData.append("email", this.state.inputEmail);
+    formData.append("phone", this.state.inputPhone);
+
+    try {
+      let response = await fetch('https://borneopoint.co.id/public/api/update_user_profile', {
+        method: 'post',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        body: formData
+      });
+      console.log( await response.json() )
+      // console.log('berhasil')
       this.setState({
         edit: false,
       })
-    })
-    .catch(err => {
-      console.log("UPDATE USER => "+err)
-    })
+    }
+    catch (error) {
+      console.log('update_user_profile : ' + error);
+    }
   }
-  handleSignOut = () => {
+  handleSignOut = async () => {
     try{
       this.props.authState.signOut(this.props.navigation.reset)
-    }catch(error){ console.debug(error) }
+      console.log('berhasil')
+    }catch(error){
+      console.log(error)
+    }
   }
   openMyQR = () => {
     this.setState({ modal: !this.state.modal })
@@ -197,8 +218,8 @@ class Profile extends Component<IProfileProps>{
         // orientation: 'p'
         // base64: true
       }
-      const data = await this.camera.takePictureAsync(options);
-      this.setState({pictureCacheUri : data.uri, camera: false})
+      this.state.data = await this.camera.takePictureAsync(options);
+      this.setState({pictureCacheUri : this.state.data.uri, camera: false})
       // console.log(data.uri);
     }
   }
@@ -236,17 +257,15 @@ class Profile extends Component<IProfileProps>{
               type={RNCamera.Constants.Type.back}
             /> */}
             <View style={{width: wp('35.55556%'), aspectRatio: 1/1, backgroundColor: '#ccc', borderRadius: 120, justifyContent: 'center', alignItems: 'center', position: 'relative'}}>
-              <Image source={this.state.pictureCacheUri ? {
-                uri: this.state.pictureCacheUri
-              } : this.state?.accountInfo?.profilePicture?.original ? {
-                uri: `https://api.borneopoint.co.id/public/profilePicture/${this.state?.accountInfo?.profilePicture?.original}?${Math.floor(Math.random() * 100 * 100)}`,
-                cache: 'reload'
-              } :person} style={{
-                width       : '100%',
-                aspectRatio : 1/1,
-                height      : '100%',
-                borderRadius: 120
-              }}/>
+              <FastImage
+                source={this.state.pictureCacheUri ? { uri: this.state.pictureCacheUri } : this.state.profile ? { uri: 'https://borneopoint.co.id/public/storage/profile/'+this.state.profile } : person}
+                style={{
+                  width       : '100%',
+                  aspectRatio : 1/1,
+                  height      : '100%',
+                  borderRadius: 120
+                }}
+              />
               {
                 this.state.edit === true ?
                   <TouchableOpacity style={{ position: 'absolute', bottom: 0, right: 0, width: '30%', backgroundColor: '#fff', elevation: 2, aspectRatio: 1/1, borderRadius: 64, justifyContent: 'center', alignItems: 'center' }} onPress={() => this.setState({ camera: true })}>
@@ -283,9 +302,9 @@ class Profile extends Component<IProfileProps>{
               <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Account</Text>
               <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', elevation: 2, padding: wp('0.5%'), paddingLeft: wp('2%'), paddingRight: wp('2%'), borderRadius: 12, marginLeft: 'auto'}} onPress={() => {
                 if(this.state.edit === false)
-                  this.setState({ edit: true, inputName: this.state.name, inputEmail: this.state.email })
+                  this.setState({ edit: true, inputName: this.state.name, inputEmail: this.state.email, inputPhone: this.state.phone })
                 else
-                  this.setState({ edit: false, inputName: undefined, inputEmail: undefined })
+                  this.setState({ edit: false, inputName: undefined, inputEmail: undefined, inputPhone: undefined })
               }}>
                 <Image source={pencil} style={{ width: wp('3%'), aspectRatio: 1/1}}/>
                 <Text style={{marginLeft: wp('1%')}}>Edit</Text>
@@ -306,6 +325,14 @@ class Profile extends Component<IProfileProps>{
                 this.state.edit !== true ? 
                   <Text style={styles.infoText}>{capitalizeWords(this.state.email)}</Text> :
                   <TextInput style={[styles.infoText, { borderColor: 'black', borderWidth: 1, borderRadius: 12}]} value={this.state.inputEmail} onChangeText={(value) => this.setState({ inputEmail: value })}/>
+              }
+            </View>
+            <View style={styles.infoContainer}>
+              <Text style={styles.infoLabel}>Phone</Text>
+              {
+                this.state.edit !== true ? 
+                  <Text style={styles.infoText}>{capitalizeWords(this.state.phone)}</Text> :
+                  <TextInput style={[styles.infoText, { borderColor: 'black', borderWidth: 1, borderRadius: 12}]} value={this.state.inputPhone} onChangeText={(value) => this.setState({ inputPhone: value })} keyboardType={'numeric'}/>
               }
             </View>
             {/* <View style={styles.infoContainer}>
