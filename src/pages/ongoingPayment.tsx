@@ -14,20 +14,36 @@ class OngoingPayment extends Component<any,any>{
   state = {
     viewHeight: undefined,
     design: 'center',
-    va: '788873336484',
-    amount: '120000',
-    exp: '2020-10-09 15:01',
-    method: undefined
+    va: undefined,
+    amount: 0,
+    exp: undefined,
+    method: undefined,
+    product_operator: undefined,
+    product_nominal: undefined,
+    sn: undefined
   }
 
   componentDidMount = async () => {
-    this.setState({method: this.props.route.params.method})
+    console.log(this.props.route.params.data)
+    this.setState({
+      va: this.props.route.params.data.va,
+      method: this.props.route.params.data.payment_channel,
+      desc: this.props.route.params.data.keterangan,
+      expiredAt: this.props.route.params.data.expiredAt,
+      amount: this.props.route.params.data.transfer_amount,
+      product_operator: this.props.route.params.data.product_operator,
+      product_nominal: this.props.route.params.data.product_nominal,
+      sn : this.props.route.params.data.sn
+    })
   }
 
   adjustDesign = (height) => {
     var screenSize = Dimensions.get('window').height - 64;
     if (+height > +screenSize){
-      this.setState({design: 'scroll'})
+      this.setState({
+        design: 'scroll',
+        viewHeight: ((screenSize - height) - 64)/2
+      }, () => {console.log("VIEW HEIGHT => ",this.state.viewHeight)})
     }
   }
 
@@ -43,43 +59,86 @@ class OngoingPayment extends Component<any,any>{
 
   renderVA = () => (
     <>
-    <Text>VA</Text>
-    <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'center', fontSize: wp('4.5%') }}>VA. Number</Text>
-    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'center', fontSize: wp('7%'), color: '#3269B3' }}>{this.state.va}</Text>
+    <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'left', fontSize: wp('4.5%') }}>VA. Number ({this.props.route.params.data.payment_channel.toUpperCase()})</Text>
+    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('7%'), color: '#3269B3' }}>{this.state.va}</Text>
 
-    <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'center', marginTop: wp('10%'), fontSize: wp('4.5%') }}>Amount</Text>
-    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'center', fontSize: wp('7%'), color: '#3269B3' }}>Rp. {this.format(this.state.amount)}</Text>
+    <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'left', marginTop: wp('10%'), fontSize: wp('4.5%') }}>Amount</Text>
+    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('7%'), color: '#3269B3' }}>Rp {this.format(this.state.amount)}</Text>
 
-    <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'center', marginTop: wp('10%'), fontSize: wp('4.5%') }}>Exp. Date</Text>
-    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'center', fontSize: wp('7%'), color: '#3269B3' }}>{this.state.exp}</Text>
+    {this.state.exp === undefined ?
+      null
+      :
+      <>
+      <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'left', marginTop: wp('10%'), fontSize: wp('4.5%') }}>Exp. Date</Text>
+      <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('7%'), color: '#3269B3' }}>{this.state.exp}</Text>
+      </>
+    }
     </>
   )
 
   renderTF = () => (
     <>
-    <Text>TF</Text>
-    <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'center', fontSize: wp('4.5%') }}>VA. Number</Text>
-    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'center', fontSize: wp('7%'), color: '#3269B3' }}>{this.state.va}</Text>
+    <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'left', fontSize: wp('4.5%') }}>Account Number ({this.props.route.params.data.payment_channel.toUpperCase()})</Text>
+    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('7%'), color: '#3269B3' }}>{this.state.va}</Text>
 
-    <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'center', marginTop: wp('10%'), fontSize: wp('4.5%') }}>Amount</Text>
-    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'center', fontSize: wp('7%'), color: '#3269B3' }}>Rp. {this.format(this.state.amount)}</Text>
+    <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'left', marginTop: wp('10%'), fontSize: wp('4.5%') }}>Amount</Text>
+    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('7%'), color: '#3269B3' }}>Rp {this.format(this.state.amount)}</Text>
 
-    <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'center', marginTop: wp('10%'), fontSize: wp('4.5%') }}>Exp. Date</Text>
-    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'center', fontSize: wp('7%'), color: '#3269B3' }}>{this.state.exp}</Text>
+    <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'left', marginTop: wp('10%'), fontSize: wp('4.5%') }}>Description</Text>
+    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('5%'), color: '#3269B3' }}>{this.state.desc}</Text>
+
+    {this.state.exp === undefined ?
+      null
+      :
+      <>
+      <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'left', marginTop: wp('10%'), fontSize: wp('4.5%') }}>Exp. Date</Text>
+      <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('7%'), color: '#3269B3' }}>{this.state.exp}</Text>
+      </>
+    }
     </>
   )
 
   renderPM = () => (
     <>
-    <Text>PM</Text>
-    <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'center', fontSize: wp('4.5%') }}>VA. Number</Text>
-    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'center', fontSize: wp('7%'), color: '#3269B3' }}>{this.state.va}</Text>
+    <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'left', fontSize: wp('4.5%') }}>Amount ({this.props.route.params.data.payment_channel.toUpperCase()})</Text>
+    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('7%'), color: '#3269B3' }}>Rp {this.format(this.state.amount)}</Text>
 
-    <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'center', marginTop: wp('10%'), fontSize: wp('4.5%') }}>Amount</Text>
-    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'center', fontSize: wp('7%'), color: '#3269B3' }}>Rp. {this.format(this.state.amount)}</Text>
+    <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'left', marginTop: wp('10%'), fontSize: wp('4.5%') }}>Description</Text>
+    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('5%'), color: '#3269B3' }}>{this.state.desc}</Text>
 
-    <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'center', marginTop: wp('10%'), fontSize: wp('4.5%') }}>Exp. Date</Text>
-    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'center', fontSize: wp('7%'), color: '#3269B3' }}>{this.state.exp}</Text>
+    {this.state.exp === undefined ?
+      null
+      :
+      <>
+      <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'left', marginTop: wp('10%'), fontSize: wp('4.5%') }}>Exp. Date</Text>
+      <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('7%'), color: '#3269B3'}}>{this.state.exp}</Text>
+      </>
+    }
+    </>
+  )
+
+  renderDW = () => (
+    <>
+    <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'left', fontSize: wp('4.5%') }}>Operator</Text>
+    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('7%'), color: '#3269B3' }}>{this.state.product_operator}</Text>
+
+    <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'left', marginTop: wp('5%'), fontSize: wp('4.5%') }}>Serial Number</Text>
+    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('5%'), color: '#3269B3' }}>{this.state.sn.split(' / ')[0]}</Text>
+    
+    <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'left', marginTop: wp('5%'), fontSize: wp('4.5%') }}>Description</Text>
+    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('5%'), color: '#3269B3' }}>{this.state.product_nominal}</Text>
+
+    <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'left', marginTop: wp('5%'), fontSize: wp('4.5%') }}>Exp. Date</Text>
+    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('5%'), color: '#3269B3' }}>{this.state.sn.split(' / ')[1]}</Text>
+
+    {this.state.exp === undefined ?
+      null
+      :
+      <>
+      <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'left', marginTop: wp('10%'), fontSize: wp('4.5%') }}>Exp. Date</Text>
+      <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('7%'), color: '#3269B3' }}>{this.state.exp}</Text>
+      </>
+    }
     </>
   )
 
@@ -88,15 +147,18 @@ class OngoingPayment extends Component<any,any>{
     {this.state.design === 'center' ?
       <View onLayout={(event) => {
           var {x, y, width, height} = event.nativeEvent.layout;
-          this.setState({viewHeight: +(height - 64)/2})
           this.adjustDesign(height)
-        }} style={{ width: '100%', marginTop: this.state.viewHeight, alignItems: 'center', justifyContent: 'center' }}>
+        }} style={{ width: '100%', flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
         <View style={{ padding: wp('8%'), width: wp('80%'), backgroundColor: '#FFF', elevation: 7, borderRadius: wp('2%'), marginTop: wp('2%'), marginBottom: wp('2%') }}>
           {this.state.method === 'indomaret' || this.state.method === 'alfamart' ?
             this.renderPM()
             :
             ( this.state.method === 'bca' ?
-              this.renderTF() : this.renderVA()
+              this.renderTF()
+              :
+              (this.state.method === 'vouchers' ?
+                this.renderDW() : this.renderVA()
+              )
             )
           }
         </View>
@@ -109,7 +171,11 @@ class OngoingPayment extends Component<any,any>{
               this.renderPM()
               :
               ( this.state.method === 'bca' ?
-                this.renderTF() : this.renderVA()
+                this.renderTF()
+                :
+                (this.state.method === 'vouchers' ?
+                this.renderDW() : this.renderVA()
+                )
               )
             }
           </View>

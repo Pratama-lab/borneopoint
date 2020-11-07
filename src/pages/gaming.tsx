@@ -37,7 +37,14 @@ class Mobile extends Component<any,any>{
     product_nominal: undefined,
     product_id: undefined,
     price_borneo: undefined,
-    pulsa_price: undefined
+    pulsa_price: undefined,
+    zona_id: undefined,
+    server_id: undefined,
+    server_id_dragon: undefined,
+    rolename_dragon: undefined,
+    rolename: undefined,
+    user_id: undefined,
+    hp: undefined,
   }
 
 
@@ -133,8 +140,15 @@ class Mobile extends Component<any,any>{
     // }
 
   selectingOperator = async (itemValue) => {
+    this.setState({
+      selectedOperator: itemValue,
+      productEnabled: false,
+      phone_number: undefined,
+      zona_id: undefined,
+      rolename: undefined,
+      server_id: undefined
+    })
     console.log(itemValue)
-    this.setState({ selectedOperator: itemValue, productEnabled: false})
     if (itemValue !== -1){
       this.setState({ loading: true})
       axios.get('https://borneopoint.co.id/public/api/get_all_product', {params:{
@@ -235,18 +249,20 @@ class Mobile extends Component<any,any>{
   // }
 
   handlePay = async () => {
+    this.gamee()
+
     const id_login = await AsyncStorage.getItem('@id_login')
     this.setState({loading: true})
     var data = {
       product_operator: this.state.product_operator,
       product_nominal: this.state.product_nominal,
-      phone_number: this.state.phone_number,
+      phone_number: this.state.hp,
       user_id: id_login,
-      product_type: 'electricity',
+      product_type: 'game',
       product_id: this.state.product_id,
       pulsa_price: this.state.pulsa_price,
       price_borneo: this.state.price_borneo,
-      payment_channel: 'electricity'
+      payment_channel: 'game'
     }
 
     // product_operator, product_nominal, phone_number, user_id, product_id, pulsa_price, price_borneo
@@ -262,7 +278,15 @@ class Mobile extends Component<any,any>{
             ]
         )
       }else{
-        if (response.data.data.message === "Insufficient Balance") {
+        if (response.data.data.message === 'User not found' || response.data.data.message === 'Customer ID not found') {
+          Alert.alert(
+            response.data.data.message,
+            response.data.data.submessage,
+            [
+              { text: 'OK', onPress: () => console.log('Cancel Pressed'), style: "cancel" }
+            ]
+          )
+        } else {
           Alert.alert(
             response.data.data.message,
             response.data.data.submessage,
@@ -271,19 +295,29 @@ class Mobile extends Component<any,any>{
               { text: 'Top Up Now', onPress: () => this.props.navigation.push('TopUp') }
             ]
           )
-        } else {
-          Alert.alert(
-            response.data.data.message,
-            response.data.data.submessage,
-            [
-              { text: 'OK', onPress: () => console.log('Cancel Pressed'), style: "cancel" }
-            ]
-          )
         }
       }
     })
     .catch((e) => console.log(e))
   }
+
+  gamee = () => {
+    // phone_number, rolename, zona_id, server_id
+    if (this.state.phone_number !== undefined && this.state.rolename !== undefined && this.state.server_id !== undefined) {
+      console.log('Bleach')
+      this.setState({hp: this.state.rolename+'|'+this.state.phone_number+'|'+this.state.server_id})
+    } else if (this.state.rolename !== undefined && this.state.server_id !== undefined) {
+      console.log('Dragonest')
+      this.setState({hp: this.state.rolename+'|'+this.state.server_id})
+    } else if (this.state.phone_number !== undefined && this.state.zona_id !== undefined) {
+      console.log('ML')
+      this.setState({hp: this.state.phone_number+'|'+this.state.zona_id})
+    } else {
+      console.log('only phone_number')
+      this.setState({hp: this.state.phone_number})
+    }
+  }
+
   render = () =>
   <>
     {this.state.loading ?
@@ -321,7 +355,7 @@ class Mobile extends Component<any,any>{
         </View>
       </DialogContent>
     </Dialog>
-    {this.props.route.params.itemType === 'pln' && (
+    {this.props.route.params.itemType === 'game' && (
         <>
         <ScrollView style={{ padding: wp('5%') }}>
             <View>
@@ -344,20 +378,84 @@ class Mobile extends Component<any,any>{
                 {this.state.selectedOperator !== -1 ?
                   <>
                     <View style={{ marginTop: wp('5%') }}>
-                        <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Customer ID</Text>
+                        <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>User ID</Text>
                     </View>
-                    <View style={{ backgroundColor: 'white', borderRadius: wp('2.22223%'), elevation: 2 }}>
-                      <TextInput
-                        style={{ marginLeft: wp('2%') }}
-                        onChangeText={(text) => this.setState({phone_number: text})}
-                        placeholder="Customer ID"
-                        keyboardType='number-pad'
-                        value={this.state.phone_number}
-                      />
+                    <View>
+                      {this.state.selectedOperator === 'Mobile Legend' ?
+                        <View style={{ flexDirection: 'row' }}>
+                          <TextInput
+                            style={{ backgroundColor: 'white', borderRadius: wp('2.22223%'), elevation: 2, width: wp('40%'), textAlign: 'center' }}
+                            onChangeText={(text) => this.setState({phone_number: text})}
+                            placeholder="User ID"
+                            keyboardType='number-pad'
+                            value={this.state.phone_number}
+                          />
+                          <TextInput
+                            style={{ backgroundColor: 'white', borderRadius: wp('2.22223%'), elevation: 2, width: wp('40%'), marginLeft: wp('5%'), textAlign: 'center' }}
+                            onChangeText={(text) => this.setState({zona_id: text})}
+                            placeholder="Zona ID"
+                            keyboardType='number-pad'
+                            value={this.state.zona_id}
+                          />
+                        </View>
+                        :
+                        (this.state.selectedOperator === 'Bleach Mobile 3D' ?
+                          <View style={{ flexDirection: 'row' }}>
+                            <TextInput
+                              style={{ backgroundColor: 'white', borderRadius: wp('2.22223%'), elevation: 2, width: wp('28.6%') }}
+                              onChangeText={(text) => this.setState({rolename: text})}
+                              placeholder="Rolename"
+                              keyboardType='number-pad'
+                              value={this.state.rolename}
+                            />
+                            <TextInput
+                              style={{ backgroundColor: 'white', borderRadius: wp('2.22223%'), elevation: 2, width: wp('28.6%'), marginLeft: wp('2%') }}
+                              onChangeText={(text) => this.setState({phone_number: text})}
+                              placeholder="User ID"
+                              keyboardType='number-pad'
+                              value={this.state.phone_number}
+                            />
+                            <TextInput
+                              style={{ backgroundColor: 'white', borderRadius: wp('2.22223%'), elevation: 2, width: wp('28.6%'), marginLeft: wp('2%') }}
+                              onChangeText={(text) => this.setState({server_id: text})}
+                              placeholder="Server ID"
+                              keyboardType='number-pad'
+                              value={this.state.server_id}
+                            />
+                          </View>
+                          :
+                          (this.state.selectedOperator === 'Dragon Nest M - SEA' ?
+                            <View style={{ flexDirection: 'row' }}>
+                              <TextInput
+                                style={{ backgroundColor: 'white', borderRadius: wp('2.22223%'), elevation: 2, width: wp('40%') }}
+                                onChangeText={(text) => this.setState({rolename: text})}
+                                placeholder="Rolename"
+                                keyboardType='number-pad'
+                                value={this.state.rolename}
+                              />
+                              <TextInput
+                                style={{ backgroundColor: 'white', borderRadius: wp('2.22223%'), elevation: 2, width: wp('40%'), marginLeft: wp('5%') }}
+                                onChangeText={(text) => this.setState({server_id: text})}
+                                placeholder="Server ID"
+                                keyboardType='number-pad'
+                                value={this.state.server_id}
+                              />
+                            </View>
+                            :
+                            <TextInput
+                              style={{ backgroundColor: 'white', borderRadius: wp('2.22223%'), elevation: 2 }}
+                              onChangeText={(text) => this.setState({phone_number: text})}
+                              placeholder="User ID"
+                              keyboardType='number-pad'
+                              value={this.state.phone_number}
+                            />
+                          )
+                        )
+                      }
                     </View>
 
                     <View style={{ marginTop: wp('5%'), marginBottom: wp('3%') }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: wp('5%') }}>kWh</Text>
+                        <Text style={{ fontWeight: 'bold', fontSize: wp('5%') }}>Select Item</Text>
                     </View>
                     <FlatList
                         data={this.state.all_product}

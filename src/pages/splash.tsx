@@ -6,6 +6,8 @@ import styles from '../styles/splash'
 import { widthPercentageToDP  as wp} from 'react-native-responsive-screen'
 import LinearGradient from 'react-native-linear-gradient';
 import {AuthContext} from '../context'
+import AsyncStorage from '@react-native-community/async-storage'
+import axios from 'axios'
 
 class Splash extends Component<any,{}>{
   constructor(props: any){
@@ -31,10 +33,37 @@ class Splash extends Component<any,{}>{
     //     console.error(error)
     //   }
     // },1000)
-    await this.props.authState.setup()
-    this.props.navigation.reset({
-      routes: [{ name: 'Main' }],
-    })
+    // await this.props.authState.setup()
+    // this.props.navigation.reset({
+    //   routes: [{ name: 'Main' }],
+    // })
+
+    const check_login = await AsyncStorage.getItem('@id_login')
+
+    if (check_login !== null){
+      axios.get('https://borneopoint.co.id/api/get_user', {params: {
+        id_login: check_login
+      }})
+      .then(resp => {
+        if (resp.data.status === 'Inactive') {
+          this.props.navigation.navigate('KtpnPhone')
+        } else if (resp.data.status === 'Declined') {
+          this.props.navigation.navigate('KtpnPhone')
+        } else if (resp.data.status === 'Waiting') {
+          this.props.navigation.navigate('Waiting')
+        } else if (resp.data.status === 'Active') {
+          this.props.authState.setup()
+          this.props.navigation.reset({
+            routes: [{ name: 'Main' }],
+          })
+        }
+      })
+    } else {
+      this.props.authState.setup()
+      this.props.navigation.reset({
+        routes: [{ name: 'Main' }],
+      })
+    }
   }
   render = () => 
     <View style={styles.layout}>

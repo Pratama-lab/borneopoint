@@ -43,6 +43,21 @@ class Mobile extends Component<any,any>{
 
 
   componentDidMount = async () => {
+    const check_login = await AsyncStorage.getItem('@id_login')
+    axios.get('https://borneopoint.co.id/api/get_user', {params: {
+      id_login: check_login
+    }})
+    .then(resp => {
+      this.setState({
+        phone_number: resp.data.phone,
+        loading: false
+      })
+      // console.log(this.state.status)
+    })
+    .catch(err => {
+      console.log('Get User : '+err)
+    })
+
     axios.get('https://borneopoint.co.id/public/api/get_all_operator', {params:{
       operator: this.props.route.params.itemType
     }})
@@ -242,17 +257,18 @@ class Mobile extends Component<any,any>{
       product_nominal: this.state.product_nominal,
       phone_number: this.state.phone_number,
       user_id: id_login,
-      product_type: 'electricity',
+      product_type: 'vouchers',
       product_id: this.state.product_id,
       pulsa_price: this.state.pulsa_price,
       price_borneo: this.state.price_borneo,
-      payment_channel: 'electricity'
+      payment_channel: 'vouchers'
     }
-
+    
     // product_operator, product_nominal, phone_number, user_id, product_id, pulsa_price, price_borneo
     axios.get('https://borneopoint.co.id/public/api/top_up_request', {params:{data}})
     .then(response => {
       this.setState({loading: false})
+      console.log(response.data)
       if (response.data.data.message === 'PROCESS'){
         Alert.alert(
             'Success!',
@@ -321,7 +337,7 @@ class Mobile extends Component<any,any>{
         </View>
       </DialogContent>
     </Dialog>
-    {this.props.route.params.itemType === 'pln' && (
+    {this.props.route.params.itemType === 'voucher' && (
         <>
         <ScrollView style={{ padding: wp('5%') }}>
             <View>
@@ -343,21 +359,8 @@ class Mobile extends Component<any,any>{
                 </View>
                 {this.state.selectedOperator !== -1 ?
                   <>
-                    <View style={{ marginTop: wp('5%') }}>
-                        <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Customer ID</Text>
-                    </View>
-                    <View style={{ backgroundColor: 'white', borderRadius: wp('2.22223%'), elevation: 2 }}>
-                      <TextInput
-                        style={{ marginLeft: wp('2%') }}
-                        onChangeText={(text) => this.setState({phone_number: text})}
-                        placeholder="Customer ID"
-                        keyboardType='number-pad'
-                        value={this.state.phone_number}
-                      />
-                    </View>
-
                     <View style={{ marginTop: wp('5%'), marginBottom: wp('3%') }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: wp('5%') }}>kWh</Text>
+                        <Text style={{ fontWeight: 'bold', fontSize: wp('5%') }}>Nominal</Text>
                     </View>
                     <FlatList
                         data={this.state.all_product}

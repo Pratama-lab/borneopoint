@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import {Picker} from '@react-native-community/picker';
 import { ScrollView , Alert, View, Text, TextInput, TouchableOpacity, Image, ActivityIndicator, FlatList, StyleSheet} from 'react-native';
+import FastImage from 'react-native-fast-image'
 import { widthPercentageToDP  as wp} from 'react-native-responsive-screen';
 import axios from 'axios'
 import Dialog, { DialogFooter, DialogButton, DialogContent, DialogTitle } from 'react-native-popup-dialog';
@@ -242,11 +243,11 @@ class Mobile extends Component<any,any>{
       product_nominal: this.state.product_nominal,
       phone_number: this.state.phone_number,
       user_id: id_login,
-      product_type: 'electricity',
+      product_type: 'etoll',
       product_id: this.state.product_id,
       pulsa_price: this.state.pulsa_price,
       price_borneo: this.state.price_borneo,
-      payment_channel: 'electricity'
+      payment_channel: 'etoll'
     }
 
     // product_operator, product_nominal, phone_number, user_id, product_id, pulsa_price, price_borneo
@@ -321,7 +322,7 @@ class Mobile extends Component<any,any>{
         </View>
       </DialogContent>
     </Dialog>
-    {this.props.route.params.itemType === 'pln' && (
+    {this.props.route.params.itemType === 'etoll' && (
         <>
         <ScrollView style={{ padding: wp('5%') }}>
             <View>
@@ -343,21 +344,44 @@ class Mobile extends Component<any,any>{
                 </View>
                 {this.state.selectedOperator !== -1 ?
                   <>
-                    <View style={{ marginTop: wp('5%') }}>
-                        <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Customer ID</Text>
-                    </View>
-                    <View style={{ backgroundColor: 'white', borderRadius: wp('2.22223%'), elevation: 2 }}>
-                      <TextInput
-                        style={{ marginLeft: wp('2%') }}
-                        onChangeText={(text) => this.setState({phone_number: text})}
-                        placeholder="Customer ID"
-                        keyboardType='number-pad'
-                        value={this.state.phone_number}
-                      />
-                    </View>
-
                     <View style={{ marginTop: wp('5%'), marginBottom: wp('3%') }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: wp('5%') }}>kWh</Text>
+                        <Text style={{ fontWeight: 'bold', fontSize: wp('5%') }}>Card Number</Text>
+                    </View>
+                    <View style={{ backgroundColor: 'white', borderRadius: wp('2.22223%'), elevation: 2, flexDirection: 'row' }}>
+                      <TextInput
+                          onChangeText={(text) => this.setState({ phone_number: text })}
+                          placeholder="Your Card Number"
+                          style={{ fontSize: 16, width: wp('60%'), marginLeft: wp('2%') }}
+                          keyboardType='phone-pad'
+                          value={this.state.phone_number}
+                      />
+                      <View style={{ width: wp('25%'), marginLeft: wp('2%'), alignItems: 'center', justifyContent: 'center' }}>
+                        {/* DANA, Mandiri E-Toll, Indomaret Card E-Money, Gopay E-Money, LinkAja, OVO, TapCash BNI, TIX ID */}
+                        {this.state.selectedOperator === 'DANA' && (
+                          <FastImage source={{ uri: 'https://cdn.mobilepulsa.net/img/product/operator_list/140119034905-Dana-01.png' }} style={{ width: '100%', height: wp('10%') }} />
+                        )}
+                        {this.state.selectedOperator === 'Mandiri E-Toll' && (
+                          <FastImage source={{ uri: 'https://cdn.mobilepulsa.net/img/product/operator_list/140119040636-Emoney-01.png' }} style={{ width: '100%', height: wp('10%') }} />
+                        )}
+                        {this.state.selectedOperator === 'Indomaret Card E-Money' && (
+                          <FastImage source={{ uri: 'https://cdn.mobilepulsa.net/img/product/operator_list/140119035803-Indomaret-01.png' }} style={{ width: '100%', height: wp('10%') }} />
+                        )}
+                        {this.state.selectedOperator === 'GoPay E-Money' && (
+                          <FastImage source={{ uri: 'https://cdn.mobilepulsa.net/img/logo/pulsa/small/gopay.png' }} style={{ width: '100%', height: wp('10%') }} />
+                        )}
+                        {this.state.selectedOperator === 'LinkAja' && (
+                          <FastImage source={{ uri: 'https://cdn.mobilepulsa.net/img/product/operator_list/120619111757-040319020726-linkaja.png' }} style={{ width: '100%', height: wp('10%') }} />
+                        )}
+                        {this.state.selectedOperator === 'OVO' && (
+                          <FastImage source={{ uri: 'https://cdn.mobilepulsa.net/img/product/operator_list/140119040045-ovo-01.png' }} style={{ width: '100%', height: wp('10%') }} />
+                        )}
+                        {this.state.selectedOperator === 'TapCash BNI' && (
+                          <FastImage source={{ uri: 'https://cdn.mobilepulsa.net/img/product/operator_list/070519015817-tapcash.jpg' }} style={{ width: '100%', height: wp('10%') }} />
+                        )}
+                      </View>
+                    </View>
+                    <View style={{ marginTop: wp('5%'), marginBottom: wp('3%') }}>
+                        <Text style={{ fontWeight: 'bold', fontSize: wp('5%') }}>Nominal</Text>
                     </View>
                     <FlatList
                         data={this.state.all_product}
@@ -398,7 +422,7 @@ class Mobile extends Component<any,any>{
             >
                 <TouchableOpacity 
                     onPress={() => this.handlePay()}
-                    style={{ backgroundColor: this.state.semi_selecting_pulsa != undefined ? '#3269B3': '#ccc', borderRadius: wp('2.223%'), padding: wp('2.5%'), flexDirection: 'row'}} disabled={this.state.semi_selecting_pulsa == undefined}>
+                    style={{ backgroundColor: this.state.phone_number != undefined && this.state.semi_selecting_pulsa != undefined ? '#3269B3': '#ccc', borderRadius: wp('2.223%'), padding: wp('2.5%'), flexDirection: 'row'}} disabled={this.state.phone_number == undefined || this.state.semi_selecting_pulsa == undefined}>
                     <Image source={logo} style={{marginRight: wp('2.5%')}}/>
                     <Text style={{fontWeight: 'bold', fontSize: wp('5%'), color: 'white'}}>Pay</Text>
                 </TouchableOpacity>

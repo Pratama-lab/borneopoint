@@ -1,17 +1,20 @@
 import React, { Component } from 'react'
-import { View, Text, Image, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native'
+import { View, Text, Image, TouchableOpacity, TextInput, Alert, ScrollView, ActivityIndicator, StyleSheet } from 'react-native'
 import styles from '../styles/topUp'
-import { widthPercentageToDP } from 'react-native-responsive-screen'
+import { widthPercentageToDP as wp } from 'react-native-responsive-screen'
 import validateAndConvertNumber from '../functions/validateAndConvertNumber'
 import axios from 'axios'
 import {AuthContext} from '../context'
 import AsyncStorage from '@react-native-community/async-storage'
 import { topUp } from '../api'
 
-const bcaLogo = require('../assets/icons/bca.png')
-const mandiriLogo = require('../assets/icons/mandiri.png')
-const cimbLogo = require('../assets/icons/cimb.png')
-const bniLogo = require('../assets/icons/bni.png')
+const bcaLogo = require('../assets/images/bca.png')
+const mandiriLogo = require('../assets/images/mandiri.png')
+const cimbLogo = require('../assets/icons/cimb3x.png')
+const bniLogo = require('../assets/images/bni.png')
+const bagLogo = require('../assets/images/client-bag.png')
+const indomartLogo = require('../assets/images/LogoIndomaret.png')
+const alfamartLogo = require('../assets/images/alfamart_new.png')
 const money = require('../assets/icons/money.png')
 
 const imageLogoSwitch = (type:string) => {
@@ -24,6 +27,12 @@ const imageLogoSwitch = (type:string) => {
       return cimbLogo
     case 'bni':
       return bniLogo
+    case 'bag':
+      return bagLogo
+    case 'indomart':
+      return indomartLogo
+    case 'alfamart':
+      return alfamartLogo
     default:
       return money
   }
@@ -32,18 +41,22 @@ const imageLogoSwitch = (type:string) => {
 class TopUp extends Component<any,any>{
   constructor(props){
     super(props)
-  }
-  state = {
-    amount: undefined,
-    payment_method: undefined
+    this.state = {
+      amount: undefined,
+      payment_method: undefined,
+      loading: true
+    }
   }
 
   componentDidMount = async () => {
+    this.setState({
+      loading: false
+    })
   }
 
   onChamgeAmount = (text) => {
     this.setState({
-      amount: text
+      amount: text*1
     }, () => console.log(this.state.amount))
   }
 
@@ -70,11 +83,12 @@ class TopUp extends Component<any,any>{
             amount: this.state.amount
           })
           .then(resp => {
+            console.log(resp.data)
             this.setState({loading: false})
             if(typeof resp.data.status !== 'undefined' && resp.data.status != 200 && typeof resp.data.message !== 'undefined'){
               Alert.alert('',resp.data.message)
             }else{
-              this.props.navigation.navigate('ongoingPayment', {method: this.state.payment_method});
+              this.props.navigation.navigate('ongoingPayment', {data: resp.data});
             }
           }).catch(e => console.log("confirmTOPUP ===> ", e.message))
         })
@@ -82,10 +96,10 @@ class TopUp extends Component<any,any>{
           console.log('Get User : '+err)
         })
       }else{
-        alert('Please select payment method')
+        Alert.alert('','Please select payment method')
       }
     }else{
-      alert('Please fill the amount')
+      Alert.alert('','Please fill the amount')
     }
     
     // try{
@@ -150,73 +164,100 @@ class TopUp extends Component<any,any>{
   }
 
   render = () => 
-  <ScrollView>
-    <View style={styles.pageContainer}>
-      <View style={styles.optionSectionContainer}>
-        <Text style={styles.optionTitle}>Amount</Text>
-        <View style={{ borderRadius: widthPercentageToDP('2.222223%'), elevation: 2, marginTop: widthPercentageToDP('3%'), backgroundColor: '#FFF' }}>
-          <TextInput  placeholder={'Enter TopUp amount'}  placeholderTextColor={'#ccc'} keyboardType={'numeric'} onChangeText={this.onChamgeAmount} onEndEditing={() => {}} style={{ paddingLeft: widthPercentageToDP('5%'), fontSize: widthPercentageToDP('4%')}}/>
+  <>
+    {this.state.loading ?
+      <View style={[ styless.container_loading, styless.horizontal_loading ]}>
+        <ActivityIndicator size="large" color="#FFF" />
+      </View>
+      :
+      null
+    }
+    <ScrollView>
+      <View style={styles.pageContainer}>
+        <View style={styles.optionSectionContainer}>
+          <Text style={styles.optionTitle}>Amount</Text>
+          <View style={{ borderRadius: wp('2.222223%'), elevation: 2, marginTop: wp('3%'), backgroundColor: '#FFF' }}>
+            <TextInput  placeholder={'Enter TopUp amount'}  placeholderTextColor={'#ccc'} keyboardType={'numeric'} onChangeText={this.onChamgeAmount} onEndEditing={() => {}} style={{ paddingLeft: wp('5%'), fontSize: wp('4%')}}/>
+          </View>
         </View>
-      </View>
-      <View style={styles.optionSectionContainer}>
-        <Text style={styles.optionTitle}>Bank Transfer</Text>
-        <TouchableOpacity style={this.switchSelected('transfer_bca')} onPress={() => this.setState({payment_method: 'bca'})}>
-          <Image source={imageLogoSwitch('bca')} style={styles.bankLogo} />
-          <Text style={styles.bankText}>BCA</Text>
+        <View style={styles.optionSectionContainer}>
+          <Text style={styles.optionTitle}>Bank Transfer</Text>
+          <TouchableOpacity style={this.switchSelected('bca')} onPress={() => this.setState({payment_method: 'bca'})}>
+            <Image source={imageLogoSwitch('bca')} style={[ styles.bankLogo, { width: wp('12%'), height: wp('5%') }]} />
+            <Text style={styles.bankText}>BCA</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.optionSectionContainer}>
+          <Text style={styles.optionTitle}>Virtual Account</Text>
+          <TouchableOpacity style={this.switchSelected('cimb')} onPress={() => this.setState({payment_method: 'cimb'})}>
+            <Image source={imageLogoSwitch('cimb')} style={[ styles.bankLogo, { width: wp('12%'), height: wp('5%') }]} />
+            <Text style={styles.bankText}>CIMB</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={this.switchSelected('mandiri')} onPress={() => this.setState({payment_method: 'mandiri'})}>
+            <Image source={imageLogoSwitch('mandiri')} style={[ styles.bankLogo, { width: wp('12%'), height: wp('5%') }]} />
+            <Text style={styles.bankText}>Mandiri</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={this.switchSelected('bni')} onPress={() => this.setState({payment_method: 'bni'})}>
+            <Image source={imageLogoSwitch('bni')} style={[ styles.bankLogo, { width: wp('12%'), height: wp('4%') }]} />
+            <Text style={styles.bankText}>BNI</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={this.switchSelected('bag')} onPress={() => this.setState({payment_method: 'bag'})}>
+            <Image source={imageLogoSwitch('bag')} style={[ styles.bankLogo, { width: wp('12%'), height: wp('5%') }]} />
+            <Text style={styles.bankText}>BAG</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.optionSectionContainer}>
+          <Text style={styles.optionTitle}>Physical Merchant</Text>
+          <TouchableOpacity style={this.switchSelected('indomaret')} onPress={() => this.setState({payment_method: 'indomaret'})}>
+            <Image source={imageLogoSwitch('indomart')} style={[ styles.bankLogo, { width: wp('12%'), height: wp('4.5%') }]} />
+            <Text style={styles.bankText}>Indomaret</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={this.switchSelected('alfamart')} onPress={() => this.setState({payment_method: 'alfamart'})}>
+            <Image source={imageLogoSwitch('alfamart')} style={[ styles.bankLogo, { width: wp('12%'), height: wp('4.5%') }]} />
+            <Text style={styles.bankText}>Alfamart</Text>
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity
+          style={{alignSelf: 'center',
+            marginTop: wp('5%'),
+            marginBottom: wp('5%'),
+            width: wp('64.44444%'),
+            aspectRatio: 232/48,
+            backgroundColor: '#3269B3',
+            borderRadius: wp('2.22223%'),
+            justifyContent: 'center',
+            alignItems: 'center'
+          }} onPress={this.confirmTopUp}>
+          <Text style={{
+            fontSize: wp('5%'),
+            color: 'white',
+            fontFamily: 'Ubuntu-Bold'
+          }}>TopUp</Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.optionSectionContainer}>
-        <Text style={styles.optionTitle}>Virtual Account</Text>
-        <TouchableOpacity style={this.switchSelected('va_cimb_niaga')} onPress={() => this.setState({payment_method: 'cimb'})}>
-          <Image source={imageLogoSwitch('cimb')} style={styles.bankLogo} />
-          <Text style={styles.bankText}>CIMB</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={this.switchSelected('va_mandiri')} onPress={() => this.setState({payment_method: 'mandiri'})}>
-          <Image source={imageLogoSwitch('mandiri')} style={styles.bankLogo} />
-          <Text style={styles.bankText}>Mandiri</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={this.switchSelected('va_bni')} onPress={() => this.setState({payment_method: 'bni'})}>
-          <Image source={imageLogoSwitch('bni')} style={styles.bankLogo} />
-          <Text style={styles.bankText}>BNI</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={this.switchSelected('va_bni')} onPress={() => this.setState({payment_method: 'bag'})}>
-          <Image source={imageLogoSwitch('bni')} style={styles.bankLogo} />
-          <Text style={styles.bankText}>BAG</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.optionSectionContainer}>
-        <Text style={styles.optionTitle}>Physical Merchant</Text>
-        <TouchableOpacity style={this.switchSelected('va_bni')} onPress={() => this.setState({payment_method: 'indomaret'})}>
-          <Image source={imageLogoSwitch('bni')} style={styles.bankLogo} />
-          <Text style={styles.bankText}>Indomaret</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={this.switchSelected('va_bni')} onPress={() => this.setState({payment_method: 'alfamart'})}>
-          <Image source={imageLogoSwitch('bni')} style={styles.bankLogo} />
-          <Text style={styles.bankText}>Alfamart</Text>
-        </TouchableOpacity>
-      </View>
-      <TouchableOpacity
-        style={{alignSelf: 'center',
-          marginTop: widthPercentageToDP('5%'),
-          marginBottom: widthPercentageToDP('5%'),
-          width: widthPercentageToDP('64.44444%'),
-          aspectRatio: 232/48,
-          backgroundColor: '#3269B3',
-          borderRadius: widthPercentageToDP('2.22223%'),
-          justifyContent: 'center',
-          alignItems: 'center'
-        }} onPress={this.confirmTopUp}>
-        <Text style={{
-          fontSize: widthPercentageToDP('5%'),
-          color: 'white',
-          fontFamily: 'Ubuntu-Bold'
-        }}>TopUp</Text>
-      </TouchableOpacity>
-    </View>
-  </ScrollView>
+    </ScrollView>
+  </>
 }
 
 export default (props) => 
 <AuthContext.Consumer>{
   authState => <TopUp authState={authState} {...props}/>
 }</AuthContext.Consumer>
+
+const styless = StyleSheet.create({
+  container_loading: {
+    flex: 1,
+    position:'absolute',
+    zIndex:2,
+    width: '100%',
+    height: '100%',
+    justifyContent: "center",
+    backgroundColor: 'rgba(0,0,0,0.1)'
+  },
+  
+  horizontal_loading: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    padding: 10
+  },
+})

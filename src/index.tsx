@@ -26,6 +26,14 @@ import detailPulsaScreen from './pages/detailPulsa'
 import ForexScreen from './pages/forex'
 import dealDetailScreen from './pages/dealDetail'
 import ongoingPaymentScreen from './pages/ongoingPayment'
+import MobileScreen from './pages/mobile'
+import DataScreen from './pages/data'
+import GamingScreen from './pages/gaming'
+import EtollScreen from './pages/etoll'
+import VouchersScreen from './pages/vouchers'
+import KtpnPhoneScreen from './pages/ktpnphone'
+import infoDetailScreen from './pages/infoDetail'
+import WaitingScreen from './pages/waiting'
 // import TransferScreen from './pages'
 import { AuthContext, AuthState } from './context'
 
@@ -178,11 +186,11 @@ const RootStack = () => {
               // animationEnabled: true,
             }}/>
             <Stack.Screen name={"Purchase"} component={PurchaseScreen} options={{
-              header            : (props: StackHeaderProps) => <PageHeader {...props} title={'Purchase'}/>,
+              header            : (props: StackHeaderProps) => <PageHeader {...props} title={'Electricity'}/>,
               // animationEnabled: true,
             }}/>
             <Stack.Screen name={"Forex"} component={ForexScreen} options={{
-              header            : (props: StackHeaderProps) => <PageHeader {...props} title={'Purchase'}/>,
+              header            : (props: StackHeaderProps) => <PageHeader {...props} title={'Forex'}/>,
               // animationEnabled: true,
             }}/>
             <Stack.Screen name={"Summary"} component={SummaryScreen} options={{
@@ -202,7 +210,39 @@ const RootStack = () => {
               // animationEnabled: true,
             }}/>
             <Stack.Screen name="ongoingPayment" component={ongoingPaymentScreen} options={{
-              header            : (props: StackHeaderProps) => <PageHeader {...props} title={'Ongoing Payment'}/>,
+              header            : (props: StackHeaderProps) => <PageHeader {...props} title={'Detail'}/>,
+              // animationEnabled: true,
+            }}/>
+            <Stack.Screen name="Mobile" component={MobileScreen} options={{
+              header            : (props: StackHeaderProps) => <PageHeader {...props} title={'Mobile'}/>,
+              // animationEnabled: true,
+            }}/>
+            <Stack.Screen name="Data" component={DataScreen} options={{
+              header            : (props: StackHeaderProps) => <PageHeader {...props} title={'Data Plan'}/>,
+              // animationEnabled: true,
+            }}/>
+            <Stack.Screen name="Gaming" component={GamingScreen} options={{
+              header            : (props: StackHeaderProps) => <PageHeader {...props} title={'Gaming'}/>,
+              // animationEnabled: true,
+            }}/>
+            <Stack.Screen name="EToll" component={EtollScreen} options={{
+              header            : (props: StackHeaderProps) => <PageHeader {...props} title={'EToll'}/>,
+              // animationEnabled: true,
+            }}/>
+            <Stack.Screen name="Vouchers" component={VouchersScreen} options={{
+              header            : (props: StackHeaderProps) => <PageHeader {...props} title={'Vouchers'}/>,
+              // animationEnabled: true,
+            }}/>
+            <Stack.Screen name="KtpnPhone" component={KtpnPhoneScreen} options={{
+              header            : (props: StackHeaderProps) => null,
+              // animationEnabled: true,
+            }}/>
+            <Stack.Screen name="InfoDetail" component={infoDetailScreen} options={{
+              header            : (props: StackHeaderProps) => <PageHeader {...props} title={'Info & Promotion'}/>,
+              // animationEnabled: true,
+            }}/>
+            <Stack.Screen name="Waiting" component={WaitingScreen} options={{
+              header            : (props: StackHeaderProps) => null,
               // animationEnabled: true,
             }}/>
           </>

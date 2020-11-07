@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
-import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
+import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert, TextInput, ToastAndroid } from 'react-native'
 
 import styles from '../styles/signIn'
-import { widthPercentageToDP  as wp} from 'react-native-responsive-screen'
+import { widthPercentageToDP as wp} from 'react-native-responsive-screen'
 import LinearGradient from 'react-native-linear-gradient'
 import AuthInput from '../components/authInput'
 import GoogleButton from '../components/googleButton'
@@ -24,8 +24,13 @@ const logo = require('../assets/logo.png')
 
 class SignIn extends Component<any,{}>{
   constructor(props: any){
-    super(props)
-    this.handleGoogleSignIn = this.handleGoogleSignIn.bind(this)
+    super(props);
+    this.handleGoogleSignIn = this.handleGoogleSignIn.bind(this);
+    this.state = {
+      email: '',
+      email_valid: '',
+      email_native: ''
+    }
   }
   private email
   private password
@@ -43,13 +48,7 @@ class SignIn extends Component<any,{}>{
   getValuePassword = (text: string) => {
     this.password = text
   }
-  goTo = (title, params?: any) => {
-    try{
-      this.props.navigation.reset({
-        routes: [{ name: 'Main' }]
-      })
-    }catch(error){ console.debug(error) }
-  }
+  
   navigateRegister = () => {
     try{
       this.props.navigation.reset({
@@ -73,13 +72,37 @@ class SignIn extends Component<any,{}>{
           email: this.state.email,
           id_login: this.state.id_email,
       }})
-      .then(resp => {
+      .then(async resp => {
         console.log(resp)
         AsyncStorage.setItem('@id_login', this.state.id_email)
-        this.goTo('Home')
+        
+        const check_login = await AsyncStorage.getItem('@id_login')
+        axios.get('https://borneopoint.co.id/api/get_user', {params: {
+          id_login: check_login
+        }})
+        .then(resp => {
+          if (resp.data.status === 'Inactive') {
+            this.props.navigation.reset({
+              routes: [{ name: 'KtpnPhone' }]
+            })
+          } else if (resp.data.status === 'Declined') {
+            this.props.navigation.reset({
+              routes: [{ name: 'KtpnPhone' }]
+            })
+          } else if (resp.data.status === 'Waiting') {
+            this.props.navigation.reset({
+              routes: [{ name: 'Waiting' }]
+            })
+          } else if (resp.data.status === 'Active') {
+            this.props.navigation.reset({
+              routes: [{ name: 'Main' }],
+            })
+          }
+        })
       })
       .catch(err => {
-        console.log('Insert user: '+err)
+        // console.log('Insert user: '+err)
+        ToastAndroid.show('This account already exists', ToastAndroid.SHORT)
       })
     }
     catch (error) {
@@ -119,9 +142,37 @@ class SignIn extends Component<any,{}>{
             email: this.state.userInfo.email,
             id_login: this.state.userInfo.id,
           }})
-          .then(() => {
+          .then(async() => {
             AsyncStorage.setItem('@id_login', this.state.userInfo.id)
-            this.goTo('Home')
+
+            const check_login = await AsyncStorage.getItem('@id_login')
+            
+            axios.get('https://borneopoint.co.id/api/get_user', {params: {
+              id_login: check_login
+            }})
+            .then(resp => {
+              if (resp.data.status === 'Inactive') {
+                this.props.navigation.reset({
+                  routes: [{ name: 'KtpnPhone' }],
+                })
+              } else if (resp.data.status === 'Declined') {
+                this.props.navigation.reset({
+                  routes: [{ name: 'KtpnPhone' }],
+                })
+              } else if (resp.data.status === 'Waiting') {
+                this.props.navigation.reset({
+                  routes: [{ name: 'Waiting' }]
+                })
+              } else if (resp.data.status === 'Active') {
+                this.props.navigation.reset({
+                  routes: [{ name: 'Main' }],
+                })
+              }
+            })
+          })
+          .catch(e => {
+            // console.log('Lalalala => '+e)
+            ToastAndroid.show('This account already exists', ToastAndroid.SHORT)
           })
         }
       },
@@ -132,7 +183,7 @@ class SignIn extends Component<any,{}>{
     // const result = await authenticateFacebook()
     // console.debug(result)
     
-    LoginManager.logInWithPermissions(['public_profile']).then(
+    LoginManager.logInWithPermissions(['public_profile', 'email']).then(
       login => {
         if (login.isCancelled) {
           console.log('Login cancelled');
@@ -169,18 +220,51 @@ class SignIn extends Component<any,{}>{
   //   }
   // }
   signIn = () => {
-    axios.get('https://borneopoint.co.id/public/api/insert_user', {params:{
-      email: this.email,
-      id_login: this.password,
-    }})
-    .then(() => {
-      AsyncStorage.setItem('@id_login', this.password)
-      this.goTo('Home')
+    axios.post('http://borneopoint.co.id/api/login', {email: this.state.email_native, password: this.password})
+    .then(resp => {
+      console.log(resp.data)
+      if (resp.data.data.message === 'These credentials do not match our records.') {
+        ToastAndroid.show("Incorrect email or password", ToastAndroid.SHORT)
+      } else {
+        AsyncStorage.setItem('@id_login', resp.data.data.user.id_login)
+        if (resp.data.data.user.status === 'Inactive') {
+          this.props.navigation.reset({
+            routes: [{ name: 'KtpnPhone' }],
+          })
+        } else if (resp.data.data.user.status === 'Declined') {
+          this.props.navigation.reset({
+            routes: [{ name: 'KtpnPhone' }],
+          })
+        } else if (resp.data.data.user.status === 'Waiting') {
+          this.props.navigation.reset({
+            routes: [{ name: 'Waiting' }]
+          })
+        } else if (resp.data.data.user.status === 'Active') {
+          this.props.navigation.reset({
+            routes: [{ name: 'Main' }],
+          })
+        }
+      }
     })
     .catch(err => {
       console.log("INSERT USER BY EMAIL => "+err)
     })
   }
+
+  validate = (text) => {
+    console.log(text);
+    let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (reg.test(text) === false) {
+      console.log("Email is Not Correct");
+      this.setState({ email_native: text, email_valid: 'Email is Not Correct' })
+      return false;
+    }
+    else {
+      this.setState({ email_native: text, email_valid: 'Email is Correct' })
+      console.log("Email is Correct");
+    }
+  }
+
   render = () => 
     // <KeyboardAvoidingView 
     //   behavior={Platform.OS == "ios" ? "padding" : "height"} style={{flex: 1}}>
@@ -205,7 +289,27 @@ class SignIn extends Component<any,{}>{
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.pageText}>Sign In</Text>
-          <AuthInput type={'email'} getValue={this.getValueEmail} style={styles.input}/>
+          <View style={{ width: '100%', backgroundColor: 'white', height: wp('11%'), borderRadius: wp('2.22223%'), elevation: 4, flexDirection: 'row', marginTop: wp('3.334%') }}>
+            <View style={{ height: '100%', marginLeft: wp('3%'), justifyContent: 'center' }}>
+              <Image source={this.state.email_native === '' ? require('../assets/icons/email.png') : require('../assets/icons/emailBlack.png')} />
+            </View>
+            <View style={{ marginLeft: wp('3.8%') }}>
+              <TextInput
+                placeholder="email"
+                style={{ fontSize: wp('4%'), width: wp('55%') }}
+                keyboardType={'email-address'}
+                onChangeText={(text) => this.validate(text)}
+                value={this.state.email_native}
+              />
+            </View>
+          </View>
+          {this.state.email_valid === 'Email is Not Correct' ?
+            <View style={{ width: '100%' }}>
+              <Text style={{ color: 'red' }}>Invalid email address</Text>
+            </View>
+            :
+            null
+          }
           <AuthInput type={'password'} getValue={this.getValuePassword} style={styles.input}/>
           <TouchableOpacity style={styles.loginButton} onPress={() => this.signIn()}>
             <Text style={styles.loginText}>Sign In</Text>
@@ -217,7 +321,7 @@ class SignIn extends Component<any,{}>{
           </View>
         </View>
         <Text style={styles.noAccountInfo}>Don’t have an account ? Click here <Text onPress={this.navigateRegister} style={styles.linkText}>Register</Text></Text>
-        <Text style={styles.forgotPassword}>Forgot password ?</Text>
+        <Text style={styles.forgotPassword} onPress={() => this.props.navigation.push('ResetPassword')}>Forgot password ?</Text>
       </View>
     // </KeyboardAvoidingView>
 }

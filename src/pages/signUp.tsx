@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View, Text, Image, ActivityIndicator, TouchableOpacity,Alert } from 'react-native'
+import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert, TextInput, ToastAndroid } from 'react-native'
 
 import { SplashRoutingProps } from '../types/index'
 import styles from '../styles/signIn'
@@ -20,7 +20,12 @@ const logo = require('../assets/logo.png')
 
 class SignUp extends Component<any,{}>{
   constructor(props: any){
-    super(props)
+    super(props);
+    this.state = {
+      email: '',
+      email_valid: '',
+      email_native: ''
+    }
   }
   private email
   private password
@@ -44,14 +49,6 @@ class SignUp extends Component<any,{}>{
 
   getValuePassword = (text: string) => {
     this.password = text
-  }
-
-  goTo = (title, params?: any) => {
-    try{
-      this.props.navigation.reset({
-        routes: [{ name: 'Main' }]
-      })
-    }catch(error){ console.debug(error) }
   }
 
   navigateSignIn = () => {
@@ -78,13 +75,38 @@ class SignUp extends Component<any,{}>{
           email: this.state.email,
           id_login: this.state.id_email,
       }})
-      .then(resp => {
+      .then(async resp => {
         console.log(resp)
         AsyncStorage.setItem('@id_login', this.state.id_email)
-        this.goTo('Home')
+
+        const check_login = await AsyncStorage.getItem('@id_login')
+
+        axios.get('https://borneopoint.co.id/api/get_user', {params: {
+          id_login: check_login
+        }})
+        .then(resp => {
+          if (resp.data.status === 'Inactive') {
+            this.props.navigation.reset({
+              routes: [{ name: 'KtpnPhone' }]
+            })
+          } else if (resp.data.status === 'Declined') {
+            this.props.navigation.reset({
+              routes: [{ name: 'KtpnPhone' }]
+            })
+          } else if (resp.data.status === 'Waiting') {
+            this.props.navigation.reset({
+              routes: [{ name: 'Waiting' }]
+            })
+          } else if (resp.data.status === 'Active') {
+            this.props.navigation.reset({
+              routes: [{ name: 'Main' }],
+            })
+          }
+        })
       })
       .catch(err => {
-        console.log('Insert user: '+err)
+        // console.log('Insert user: '+err)
+        ToastAndroid.show('This account already exists', ToastAndroid.SHORT)
       })
     }
     catch (error) {
@@ -125,9 +147,37 @@ class SignUp extends Component<any,{}>{
             email: this.state.userInfo.email,
             id_login: this.state.userInfo.id,
           }})
-          .then(() => {
+          .then(async() => {
             AsyncStorage.setItem('@id_login', this.state.userInfo.id)
-            this.goTo('Home')
+
+            const check_login = await AsyncStorage.getItem('@id_login')
+
+            axios.get('https://borneopoint.co.id/api/get_user', {params: {
+              id_login: check_login
+            }})
+            .then(resp => {
+              if (resp.data.status === 'Inactive') {
+                this.props.navigation.reset({
+                  routes: [{ name: 'KtpnPhone' }]
+                })
+              } else if (resp.data.status === 'Declined') {
+                this.props.navigation.reset({
+                  routes: [{ name: 'KtpnPhone' }]
+                })
+              } else if (resp.data.status === 'Waiting') {
+                this.props.navigation.reset({
+                  routes: [{ name: 'Waiting' }]
+                })
+              } else if (resp.data.status === 'Active') {
+                this.props.navigation.reset({
+                  routes: [{ name: 'Main' }],
+                })
+              }
+            })
+          })
+          .catch(e => {
+            // console.log('Lalalala => '+e)
+            ToastAndroid.show('This account already exists', ToastAndroid.SHORT)
           })
         }
       },
@@ -139,7 +189,7 @@ class SignUp extends Component<any,{}>{
     // const result = await authenticateFacebook()
     // console.debug(result)
     
-    LoginManager.logInWithPermissions(['public_profile']).then(
+    LoginManager.logInWithPermissions(['public_profile', 'email']).then(
       login => {
         if (login.isCancelled) {
           console.log('Login cancelled');
@@ -190,16 +240,34 @@ class SignUp extends Component<any,{}>{
   signUp = () => {
     axios.get('https://borneopoint.co.id/public/api/insert_user', {params:{
       nama: this.name,
-      email: this.email,
-      id_login: this.password,
+      email: this.state.email_native,
+      password: this.password,
     }})
-    .then(() => {
-      AsyncStorage.setItem('@id_login', this.password)
-      this.goTo('Home')
+    .then((resp) => {
+      console.log(resp.data.id_login)
+      AsyncStorage.setItem('@id_login', resp.data.id_login)
+      // this.props.navigation.pop('KtpnPhone')
+      this.props.navigation.reset({
+        routes: [{ name: 'KtpnPhone' }]
+      })
     })
     .catch(err => {
       console.log("INSERT USER BY EMAIL => "+err)
     })
+  }
+
+  validate = (text) => {
+    console.log(text);
+    let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (reg.test(text) === false) {
+      console.log("Email is Not Correct");
+      this.setState({ email_native: text, email_valid: 'Email is Not Correct' })
+      return false;
+    }
+    else {
+      this.setState({ email_native: text, email_valid: 'Email is Correct' })
+      console.log("Email is Correct");
+    }
   }
 
   render = () => 
@@ -224,7 +292,27 @@ class SignUp extends Component<any,{}>{
       <View style={styles.inputContainer}>
         <Text style={styles.pageText}>Sign Up</Text>
         <AuthInput type={'name'} getValue={this.getValueName} style={styles.input}/>
-        <AuthInput type={'email'} getValue={this.getValueEmail} style={styles.input}/>
+        <View style={{ width: '100%', backgroundColor: 'white', height: wp('11%'), borderRadius: wp('2.22223%'), elevation: 4, flexDirection: 'row', marginTop: wp('3.334%') }}>
+          <View style={{ height: '100%', marginLeft: wp('3%'), justifyContent: 'center' }}>
+            <Image source={this.state.email_native === '' ? require('../assets/icons/email.png') : require('../assets/icons/emailBlack.png')} />
+          </View>
+          <View style={{ marginLeft: wp('3.8%') }}>
+            <TextInput
+              placeholder="email"
+              style={{ fontSize: wp('4%'), width: wp('55%') }}
+              keyboardType={'email-address'}
+              onChangeText={(text) => this.validate(text)}
+              value={this.state.email_native}
+            />
+          </View>
+        </View>
+        {this.state.email_valid === 'Email is Not Correct' ?
+          <View style={{ width: '100%' }}>
+            <Text style={{ color: 'red' }}>Email is not correct</Text>
+          </View>
+          :
+          null
+        }
         <AuthInput type={'password'} getValue={this.getValuePassword} style={styles.input}/>
         <TouchableOpacity style={styles.loginButton} onPress={() => this.signUp()}>
           <Text style={styles.loginText}>Sign Up</Text>

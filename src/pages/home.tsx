@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View, Text, ScrollView, Image, TouchableOpacity, FlatList, ActivityIndicator, Alert, StyleSheet } from 'react-native'
+import { View, Text, ScrollView, Image, TouchableOpacity, FlatList, ActivityIndicator, Alert, StyleSheet, ToastAndroid } from 'react-native'
 import styles from '../styles/home'
 import InfoItem from '../components/infoItem'
 import { getAllInfoAndPromotion, getAccountInfo } from '../api'
@@ -84,13 +84,14 @@ class Home extends Component<any,any>{
       id_login: check_login
     }})
     .then(resp => {
-      // alert(JSON.stringify(resp.data))
       this.setState({
         name: resp.data.name,
         profile: resp.data.profile,
         saldo: resp.data.saldo,
+        status: resp.data.status,
         loading: false
       })
+      // console.log(this.state.status)
     })
     .catch(err => {
       console.log('Get User : '+err)
@@ -139,7 +140,7 @@ class Home extends Component<any,any>{
           <View style={styles.profileWalletContainer}>
             <View style={styles.profilePictureContainer}>
               {
-                this.state.profile === undefined ? 
+                this.state.profile === null ? 
                   <Image source={person}/>
                   :
                   <Image
@@ -165,18 +166,33 @@ class Home extends Component<any,any>{
             </View>
           </View>
           <View style={styles.walletOperationContainer}>
-            <TouchableOpacity style={styles.walletItemContainer} onPress={() => this.goTo('TopUp')}>
-              <Image source={topUp} style={styles.walletItemImage}/>
-              <Text style={styles.walletItemText}>TopUp</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.walletItemContainer} onPress={() => this.goTo('Transfer')}>
-              <Image source={transfer} style={styles.walletItemImage}/>
-              <Text style={styles.walletItemText}>Transfer</Text>
-            </TouchableOpacity>
-             {/*<TouchableOpacity style={styles.walletItemContainer} onPress={() => this.goTo('Withdraw')}>
-                           <Image source={withdraw} style={styles.walletItemImage}/>
-                           <Text style={styles.walletItemText}>Withdraw</Text>
-                         </TouchableOpacity>*/}
+            {this.state.status === 'Waiting' ?
+              <>
+                <TouchableOpacity style={styles.walletItemContainer} onPress={() => ToastAndroid.show("Your account is being verified, to access this feature, your account must be active first", ToastAndroid.SHORT)}>
+                  <Image source={topUp} style={styles.walletItemImage}/>
+                  <Text style={styles.walletItemText}>TopUp</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.walletItemContainer} onPress={() => ToastAndroid.show("Your account is being verified, to access this feature, your account must be active first", ToastAndroid.SHORT)}>
+                  <Image source={transfer} style={styles.walletItemImage}/>
+                  <Text style={styles.walletItemText}>Transfer</Text>
+                </TouchableOpacity>
+              </>
+              :
+              <>
+                <TouchableOpacity style={styles.walletItemContainer} onPress={() => this.goTo('TopUp')}>
+                  <Image source={topUp} style={styles.walletItemImage}/>
+                  <Text style={styles.walletItemText}>TopUp</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.walletItemContainer} onPress={() => this.goTo('Transfer')}>
+                  <Image source={transfer} style={styles.walletItemImage}/>
+                  <Text style={styles.walletItemText}>Transfer</Text>
+                </TouchableOpacity>
+              </>
+            }
+            {/*<TouchableOpacity style={styles.walletItemContainer} onPress={() => this.goTo('Withdraw')}>
+                          <Image source={withdraw} style={styles.walletItemImage}/>
+                          <Text style={styles.walletItemText}>Withdraw</Text>
+                        </TouchableOpacity>*/}
           </View>
             {/*<TouchableOpacity style={styles.qrButton}>
             <Image source={rqr} style={styles.qrImage}/>
@@ -186,40 +202,128 @@ class Home extends Component<any,any>{
       }
       <View style={styles.ppobContainer}>
         <View style={styles.topPPOB}>
-          <TouchableOpacity style={styles.ppobItem} onPress={() => this.goTo('Purchase', {itemType: 'pln'})}>
-            <Image style={styles.ppobItemImage} source={electricity}/>
-            <Text style={styles.ppobItemText}>Electricity</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.ppobItem} onPress={() => this.goTo('Purchase', {itemType: 'pulsa'})}>
-            <Image style={styles.ppobItemImage} source={mobile} />
-            <Text style={styles.ppobItemText}>Mobile</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.ppobItem} onPress={() => this.goTo('Purchase', {itemType: 'data'})}>
-            <Image style={styles.ppobItemImage} source={data}/>
-            <Text style={styles.ppobItemText}>Data Plan</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.ppobItem} onPress={() => this.goTo('Purchase', {itemType: 'game'})}>
-            <Image style={styles.ppobItemImage} source={gaming}/>
-            <Text style={styles.ppobItemText}>Gaming</Text>
-          </TouchableOpacity>
+          {this.state.id_login === null ?
+            <>
+              <TouchableOpacity style={styles.ppobItem} onPress={() => ToastAndroid.show("Please Login First", ToastAndroid.SHORT)}>
+                <Image style={styles.ppobItemImage} source={electricity}/>
+                <Text style={styles.ppobItemText}>Electricity</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.ppobItem} onPress={() => ToastAndroid.show("Please Login First", ToastAndroid.SHORT)}>
+                <Image style={styles.ppobItemImage} source={mobile} />
+                <Text style={styles.ppobItemText}>Mobile</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.ppobItem} onPress={() => ToastAndroid.show("Please Login First", ToastAndroid.SHORT)}>
+                <Image style={styles.ppobItemImage} source={data}/>
+                <Text style={styles.ppobItemText}>Data Plan</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.ppobItem} onPress={() => ToastAndroid.show("Please Login First", ToastAndroid.SHORT)}>
+                <Image style={styles.ppobItemImage} source={gaming}/>
+                <Text style={styles.ppobItemText}>Gaming</Text>
+              </TouchableOpacity>
+            </>
+            :
+            (this.state.status === 'Waiting' ?
+              <>
+                <TouchableOpacity style={styles.ppobItem} onPress={() => ToastAndroid.show("Your account is being verified, to access this feature, your account must be active first", ToastAndroid.SHORT)}>
+                  <Image style={styles.ppobItemImage} source={electricity}/>
+                  <Text style={styles.ppobItemText}>Electricity</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.ppobItem} onPress={() => ToastAndroid.show("Your account is being verified, to access this feature, your account must be active first", ToastAndroid.SHORT)}>
+                  <Image style={styles.ppobItemImage} source={mobile} />
+                  <Text style={styles.ppobItemText}>Mobile</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.ppobItem} onPress={() => ToastAndroid.show("Your account is being verified, to access this feature, your account must be active first", ToastAndroid.SHORT)}>
+                  <Image style={styles.ppobItemImage} source={data}/>
+                  <Text style={styles.ppobItemText}>Data Plan</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.ppobItem} onPress={() => ToastAndroid.show("Your account is being verified, to access this feature, your account must be active first", ToastAndroid.SHORT)}>
+                  <Image style={styles.ppobItemImage} source={gaming}/>
+                  <Text style={styles.ppobItemText}>Gaming</Text>
+                </TouchableOpacity>
+              </>
+              :
+              <>
+                <TouchableOpacity style={styles.ppobItem} onPress={() => this.goTo('Purchase', {itemType: 'pln'})}>
+                  <Image style={styles.ppobItemImage} source={electricity}/>
+                  <Text style={styles.ppobItemText}>Electricity</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.ppobItem} onPress={() => this.goTo('Mobile', {itemType: 'pulsa'})}>
+                  <Image style={styles.ppobItemImage} source={mobile} />
+                  <Text style={styles.ppobItemText}>Mobile</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.ppobItem} onPress={() => this.goTo('Data', {itemType: 'data'})}>
+                  <Image style={styles.ppobItemImage} source={data}/>
+                  <Text style={styles.ppobItemText}>Data Plan</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.ppobItem} onPress={() => this.goTo('Gaming', {itemType: 'game'})}>
+                  <Image style={styles.ppobItemImage} source={gaming}/>
+                  <Text style={styles.ppobItemText}>Gaming</Text>
+                </TouchableOpacity>
+              </>
+            )
+          }
         </View>
         <View style={styles.bottomPPOB}>
-          <TouchableOpacity style={styles.ppobItem} onPress={() => this.goTo('Forex')}>
-            <Image style={styles.ppobItemImage} source={money}/>
-            <Text style={styles.ppobItemText}>Forex</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.ppobItem} onPress={() => this.goTo('Purchase', {itemType: 'etoll'})}>
-            <Image style={styles.ppobItemImage} source={bpjs}/>
-            <Text style={styles.ppobItemText}>EToll</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.ppobItem} onPress={() => this.goTo('Purchase', {itemType: 'voucher'})}>
-            <Image style={styles.ppobItemImage} source={vouchers} />
-            <Text style={styles.ppobItemText}>Vouchers</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.ppobItem}>
-            <Image style={styles.ppobItemImage} source={others}/>
-            <Text style={styles.ppobItemText}>Others</Text>
-          </TouchableOpacity>
+          {this.state.id_login === null ?
+            <>
+              <TouchableOpacity style={styles.ppobItem} onPress={() => ToastAndroid.show("Please Login First", ToastAndroid.SHORT)}>
+                <Image style={styles.ppobItemImage} source={money}/>
+                <Text style={styles.ppobItemText}>Forex</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.ppobItem} onPress={() => ToastAndroid.show("Please Login First", ToastAndroid.SHORT)}>
+                <Image style={styles.ppobItemImage} source={bpjs}/>
+                <Text style={styles.ppobItemText}>EToll</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.ppobItem} onPress={() => ToastAndroid.show("Please Login First", ToastAndroid.SHORT)}>
+                <Image style={styles.ppobItemImage} source={vouchers} />
+                <Text style={styles.ppobItemText}>Vouchers</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.ppobItem}>
+                <Image style={styles.ppobItemImage} source={others}/>
+                <Text style={styles.ppobItemText}>Others</Text>
+              </TouchableOpacity>
+            </>
+            :
+            (this.state.status === 'Waiting' ?
+              <>
+                <TouchableOpacity style={styles.ppobItem} onPress={() => ToastAndroid.show("Your account is being verified, to access this feature, your account must be active first", ToastAndroid.SHORT)}>
+                  <Image style={styles.ppobItemImage} source={money}/>
+                  <Text style={styles.ppobItemText}>Forex</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.ppobItem} onPress={() => ToastAndroid.show("Your account is being verified, to access this feature, your account must be active first", ToastAndroid.SHORT)}>
+                  <Image style={styles.ppobItemImage} source={bpjs}/>
+                  <Text style={styles.ppobItemText}>EToll</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.ppobItem} onPress={() => ToastAndroid.show("Your account is being verified, to access this feature, your account must be active first", ToastAndroid.SHORT)}>
+                  <Image style={styles.ppobItemImage} source={vouchers} />
+                  <Text style={styles.ppobItemText}>Vouchers</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.ppobItem}>
+                  <Image style={styles.ppobItemImage} source={others}/>
+                  <Text style={styles.ppobItemText}>Others</Text>
+                </TouchableOpacity>
+              </>
+              :
+              <>
+                <TouchableOpacity style={styles.ppobItem} onPress={() => this.goTo('Forex')}>
+                  <Image style={styles.ppobItemImage} source={money}/>
+                  <Text style={styles.ppobItemText}>Forex</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.ppobItem} onPress={() => this.goTo('EToll', {itemType: 'etoll'})}>
+                  <Image style={styles.ppobItemImage} source={bpjs}/>
+                  <Text style={styles.ppobItemText}>EToll</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.ppobItem} onPress={() => this.goTo('Vouchers', {itemType: 'voucher'})}>
+                  <Image style={styles.ppobItemImage} source={vouchers} />
+                  <Text style={styles.ppobItemText}>Vouchers</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.ppobItem}>
+                  <Image style={styles.ppobItemImage} source={others}/>
+                  <Text style={styles.ppobItemText}>Others</Text>
+                </TouchableOpacity>
+              </>
+            )
+          }
         </View>
       </View>
       <View style={styles.infoAndPromotionContainer}>
@@ -231,7 +335,7 @@ class Home extends Component<any,any>{
             horizontal={true}
             extraData={this.state}
             renderItem={({item}) => (
-              <TouchableOpacity style={{ width: widthPercentageToDP('50%'), borderRadius: widthPercentageToDP('2.5%'), elevation: 3, marginLeft: widthPercentageToDP('5%'), backgroundColor: 'white', marginTop: widthPercentageToDP('2%'), marginBottom: widthPercentageToDP('1%'), marginRight: widthPercentageToDP('1%'), alignItems: 'center' }}>
+              <TouchableOpacity onPress={() => this.props.navigation.push('InfoDetail', {id: item.id})} style={{ width: widthPercentageToDP('50%'), borderRadius: widthPercentageToDP('2.5%'), elevation: 3, marginLeft: widthPercentageToDP('5%'), backgroundColor: 'white', marginTop: widthPercentageToDP('2%'), marginBottom: widthPercentageToDP('1%'), marginRight: widthPercentageToDP('1%'), alignItems: 'center' }}>
                 <FastImage source={{ uri: url+item.images}} style={{ width: '100%', height: heightPercentageToDP('20%'), borderRadius: widthPercentageToDP('2.5%') }} />
                 <View style={{ marginLeft: widthPercentageToDP('2%'), marginRight: widthPercentageToDP('2%'), marginBottom: widthPercentageToDP('2%'), marginTop: widthPercentageToDP('2%') }}>
                   <Text numberOfLines={5}>{item.description}</Text>

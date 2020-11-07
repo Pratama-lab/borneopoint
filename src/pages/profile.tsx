@@ -189,7 +189,10 @@ class Profile extends Component<IProfileProps>{
   }
   handleSignOut = async () => {
     try{
-      this.props.authState.signOut(this.props.navigation.reset)
+      await AsyncStorage.removeItem('@id_login')
+      this.props.navigation.reset({
+        routes: [{ name: 'Main' }],
+      })
       console.log('berhasil')
     }catch(error){
       console.log(error)
@@ -276,7 +279,7 @@ class Profile extends Component<IProfileProps>{
                   </TouchableOpacity> : null
               }
             </View>
-            <TouchableOpacity 
+            {/* <TouchableOpacity 
               onPress={this.openMyQR}
               style={{
                 width           : wp('17.777778'),
@@ -291,7 +294,7 @@ class Profile extends Component<IProfileProps>{
               }}>
               <Image source={rqr} style={{ width: wp('8.888889%'), aspectRatio: 1/1}}/>
               <Text style={{color: 'white', fontSize: wp('2.77777%')}}>QR</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
           <View style={{ marginTop: wp('5%'), marginLeft: wp('5%'), marginRight: wp('5%') }}>
             <View style={{
@@ -321,11 +324,7 @@ class Profile extends Component<IProfileProps>{
             </View>
             <View style={styles.infoContainer}>
               <Text style={styles.infoLabel}>Email</Text>
-              {
-                this.state.edit !== true ? 
-                  <Text style={styles.infoText}>{capitalizeWords(this.state.email)}</Text> :
-                  <TextInput style={[styles.infoText, { borderColor: 'black', borderWidth: 1, borderRadius: 12}]} value={this.state.inputEmail} onChangeText={(value) => this.setState({ inputEmail: value })}/>
-              }
+              <Text style={styles.infoText}>{capitalizeWords(this.state.email)}</Text>
             </View>
             <View style={styles.infoContainer}>
               <Text style={styles.infoLabel}>Phone</Text>

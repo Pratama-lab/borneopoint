@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View, Text, Image, TouchableOpacity, TextInput, Alert, ActivityIndicator } from 'react-native'
+import { View, Text, Image, TouchableOpacity, TextInput, Alert, ActivityIndicator, ToastAndroid } from 'react-native'
 import styles from '../styles/topUp'
 import { widthPercentageToDP } from 'react-native-responsive-screen'
 import capitalizeWords from '../functions/capitalizeWords'
@@ -9,6 +9,8 @@ import validateAndConvertNumber from '../functions/validateAndConvertNumber'
 import {AuthContext} from '../context'
 
 import { transfer, userSearch } from '../api'
+import axios from 'axios'
+import AsyncStorage from '@react-native-community/async-storage'
 
 const bcaLogo = require('../assets/icons/bca.png')
 const mandiriLogo = require('../assets/icons/mandiri.png')
@@ -41,53 +43,118 @@ const BankItem = ({ type, title, style } : { title: string, type: string, style?
 
 class TopUp extends Component<any,any>{
   constructor(props){
-    super(props)
+    super(props);
+    this.state = {
+      amount: undefined,
+      email: undefined,
+      accountInfo: undefined,
+      gettingAccountInfo: false,
+      email_valid: false,
+      amount_valid: false
+    }
   }
-  state = {
-    amount: undefined,
-    email: undefined,
-    accountInfo: undefined,
-    gettingAccountInfo: false
-  }
+
   onChamgeAmount = (text) => {
-    this.setState({ amount: text })
+    this.setState({ amount: text*1 })
+    if (text > 999){
+      this.setState({
+        amount_valid: true
+      })
+    }else{
+      this.setState({
+        amount_valid: false
+      })
+    }
   }
+
   onChangeEmail = (text) => {
     this.setState({ email: text })
+    console.log(text)
   } 
-  checkAccount = async () => {
-    try{
-      this.setState({ gettingAccountInfo: true })
-      console.log('email',this.state.email)
-      const result = await userSearch({email: this.state.email})
-      this.setState({ gettingAccountInfo: false })
-      if(!result) return Alert.alert("Check","User not found",[{ text: "OK", }],{ cancelable: false })
-      console.debug('accountInfo result', result)
-      this.setState({ accountInfo: result.data }, () => console.log(this.state))
-    }catch(error){ console.debug(error) }
-  }
-  confirmTransfer = async () => {
-    try{
-      if(this.state?.amount === undefined || this.state?.amount === null) 
-        return Alert.alert("Amount","Please enter amount !",[{ text: "OK", }],{ cancelable: false })
-      const number = validateAndConvertNumber(this.state.amount)
-      if(number == undefined) 
-        return Alert.alert("Invalid","Please enter a valid number !",[{ text: "OK", }],{ cancelable: false })
-      if(number < 1000)
-        return Alert.alert("Invalid amount","Minimum Transfer is Rp 1.000,00 !",[{ text: "OK", }],{ cancelable: false })
-      if(this.state.accountInfo == undefined)
-        return Alert.alert("Transfer","Please check the account first",[{ text: "OK", }],{ cancelable: false })
-      if(this.state?.accountInfo?.email == this.props.authState?.email)
-        return Alert.alert("Transfer Error","Cannot send to yourself",[{ text: "OK", }],{ cancelable: false })
 
-      const result = await transfer({amount: number, userId: this.props.authState._id, userToken: this.props.authState.token, to: this.state?.accountInfo?._id})
-      if(result == undefined)
-        return Alert.alert("Transfer", "Transfer failed!", [{ text: "OK", }],{ cancelable: false })
-      else
-      return Alert.alert("Transfer", "Transfer success!", [{text: "OK", onPress: () => this.props.navigation.goBack()}], { cancelable: false })
-      console.debug('topUpResult', result)
-    }catch(error){ console.debug(error) }
+  validate = (text) => {
+    console.log(text);
+    if (this.state.email_valid === true){
+      this.setState({ email_valid: false })
+    }
+    let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (reg.test(text) === false) {
+      console.log("Email is Not Correct");
+      this.setState({ email: text })
+      return false;
+    }
+    else {
+      this.setState({ email: text })
+      console.log("Email is Correct");
+    }
   }
+
+  checkAccount = async () => {
+    // try{
+      //   console.log('email',this.state.email)
+      //   const result = await userSearch({email: this.state.email})
+      //   this.setState({ gettingAccountInfo: false })
+      //   if(!result) return Alert.alert("Check","User not found",[{ text: "OK", }],{ cancelable: false })
+      //   console.debug('accountInfo result', result)
+      //   this.setState({ accountInfo: result.data }, () => console.log(this.state))
+      // }catch(error){ console.debug(error) }
+
+    this.setState({ gettingAccountInfo: true })
+      
+    axios.get('https://borneopoint.co.id/public/api/check_email', {params: {
+      email: this.state.email
+    }})
+    .then(resp => {
+      this.setState({ gettingAccountInfo: false })
+      ToastAndroid.show(resp.data.data.message, ToastAndroid.SHORT)
+      if (resp.data.data.status === '1'){
+        this.setState({
+          email_valid: true
+        })
+      }else{
+        this.setState({
+          email_valid: false
+        });
+      }
+    })
+  }
+
+  confirmTransfer = async () => {
+    // try{
+    //   if(this.state?.amount === undefined || this.state?.amount === null) 
+    //     return Alert.alert("Amount","Please enter amount !",[{ text: "OK", }],{ cancelable: false })
+    //   const number = validateAndConvertNumber(this.state.amount)
+    //   if(number == undefined) 
+    //     return Alert.alert("Invalid","Please enter a valid number !",[{ text: "OK", }],{ cancelable: false })
+    //   if(number < 1000)
+    //     return Alert.alert("Invalid amount","Minimum Transfer is Rp 1.000,00 !",[{ text: "OK", }],{ cancelable: false })
+    //   if(this.state.accountInfo == undefined)
+    //     return Alert.alert("Transfer","Please check the account first",[{ text: "OK", }],{ cancelable: false })
+    //   if(this.state?.accountInfo?.email == this.props.authState?.email)
+    //     return Alert.alert("Transfer Error","Cannot send to yourself",[{ text: "OK", }],{ cancelable: false })
+
+    //   const result = await transfer({amount: number, userId: this.props.authState._id, userToken: this.props.authState.token, to: this.state?.accountInfo?._id})
+    //   if(result == undefined)
+    //     return Alert.alert("Transfer", "Transfer failed!", [{ text: "OK", }],{ cancelable: false })
+    //   else
+    //   return Alert.alert("Transfer", "Transfer success!", [{text: "OK", onPress: () => this.props.navigation.goBack()}], { cancelable: false })
+    //   console.debug('topUpResult', result)
+    // }catch(error){ console.debug(error) }
+
+    const id_login = await AsyncStorage.getItem('@id_login');
+    axios.get('https://borneopoint.co.id/api/transfer', {params:{
+      sender_id_login: id_login,
+      receiver_email: this.state.email,
+      amount_tf: this.state.amount
+    }})
+    .then(resp => {
+      Alert.alert(
+        resp.data.data.message,
+        resp.data.data.submessage
+      )
+    })
+  }
+
   render = () => 
     <View style={styles.pageContainer}>
       <View style={styles.optionSectionContainer}>
@@ -99,7 +166,7 @@ class TopUp extends Component<any,any>{
       <View style={styles.optionSectionContainer}>
         <Text style={styles.optionTitle}>Email</Text>
         <View style={{ borderRadius: widthPercentageToDP('2.222223%'), elevation: 2, marginTop: widthPercentageToDP('3%'), flexDirection: 'row', aspectRatio: 328/46, overflow: 'hidden', width: widthPercentageToDP('90%')}}>
-          <TextInput placeholder={'Enter user email address'} autoCapitalize={'none'} placeholderTextColor={'#ccc'} keyboardType={'email-address'} onChangeText={this.onChangeEmail} onEndEditing={() => {}} style={{flex:1 , paddingLeft: widthPercentageToDP('5%'), fontSize: widthPercentageToDP('4%')}}/>
+          <TextInput placeholder={'Enter user email address'} autoCapitalize={'none'} placeholderTextColor={'#ccc'} keyboardType={'email-address'} onChangeText={(text) => this.validate(text)} onEndEditing={() => {}} style={{flex:1 , paddingLeft: widthPercentageToDP('5%'), fontSize: widthPercentageToDP('4%')}}/>
           <TouchableOpacity style={{ width: widthPercentageToDP('20%'), backgroundColor: '#3269B3', justifyContent: 'center', alignItems: 'center'}} onPress={this.checkAccount}>{
             this.state.gettingAccountInfo ?             
               <ActivityIndicator size="large" color="white"/> :             
@@ -139,11 +206,11 @@ class TopUp extends Component<any,any>{
           marginTop: widthPercentageToDP('5%'),
           width: widthPercentageToDP('64.44444%'),
           aspectRatio: 232/48,
-          backgroundColor: this.state.accountInfo === undefined ? '#ccc' : '#3269B3',
+          backgroundColor: this.state.email_valid && this.state.amount_valid ? '#3269B3' : '#ccc',
           borderRadius: widthPercentageToDP('2.22223%'),
           justifyContent: 'center',
           alignItems: 'center'
-        }} onPress={this.confirmTransfer} disabled={this.state.accountInfo === undefined}>
+        }} onPress={this.confirmTransfer} disabled={this.state.email_valid === false || this.state.amount_valid === false}>
         <Text style={{
           fontSize: widthPercentageToDP('5%'),
           color: 'white',

@@ -4,6 +4,7 @@ import { ScrollView , Alert, View, Text, TextInput, TouchableOpacity, Image, Act
 import {getPrePaidItem} from '../api'
 import { widthPercentageToDP  as wp} from 'react-native-responsive-screen';
 import formatRupiah from '../functions/formatRupiah';
+import AsyncStorage from '@react-native-community/async-storage'
 import axios from 'axios'
 import Dialog, { DialogFooter, DialogButton, DialogContent, DialogTitle } from 'react-native-popup-dialog';
 
@@ -12,13 +13,13 @@ import { AuthContext } from '../context'
 import { getAccountInfo, purchasePrePaid } from '../api'
 
 const logo = require('../assets/miniLogo.png')
-const indomaretLogo = require('../assets/images/indomaret.png')
-const alfamartLogo = require('../assets/images/alfamart_new.png')
-const cimbniagaLogo = require('../assets/images/cimbniaga.jpg')
-const bniLogo = require('../assets/images/bni.png')
-const bagLogo = require('../assets/images/bag.jpg')
-const bcaLogo = require('../assets/images/bca.png')
-const mandiriLogo = require('../assets/images/mandiri.png')
+// const indomaretLogo = require('../assets/images/indomart.png')
+// const alfamartLogo = require('../assets/images/alfamart_new.png')
+// const cimbniagaLogo = require('../assets/images/cimbniaga.jpg')
+// const bniLogo = require('../assets/images/bni.png')
+// const bagLogo = require('../assets/images/bag.jpg')
+// const bcaLogo = require('../assets/images/bca.png')
+// const mandiriLogo = require('../assets/images/mandiri.png')
 
 class Forex extends Component<any,any>{
   constructor(props){
@@ -28,7 +29,7 @@ class Forex extends Component<any,any>{
     data: undefined,
     all_operator: undefined,
     all_product: undefined,
-    amount: '',
+    amount: undefined,
     selectedOperator: -1,
     selectedProduct: -1,
     selectedProductIndex: -1,
@@ -48,6 +49,21 @@ class Forex extends Component<any,any>{
     
     
   componentDidMount = async () => {
+    const check_login = await AsyncStorage.getItem('@id_login')
+    axios.get('https://borneopoint.co.id/api/get_user', {params: {
+      id_login: check_login
+    }})
+    .then(resp => {
+      this.setState({
+        phone_number: resp.data.phone,
+        loading: false
+      })
+      // console.log(this.state.status)
+    })
+    .catch(err => {
+      console.log('Get User : '+err)
+    })
+
     axios.get('https://borneopoint.co.id/public/api/get_topup_platform')
     .then(resp => {
         //   if(typeof resp.data === 'undefined'){
@@ -86,11 +102,12 @@ class Forex extends Component<any,any>{
               selectedPlatform: this.state.topup_platform[itemValue],
               loading:false
           })
+          // console.log(this.state.selectedPlatform)
       }else{
         this.setState({
             selectedOperator: -1,
             selectedPlatform: [],
-            amount: '',
+            amount: undefined,
             price: 0,
             loading:false,
             payment_method: undefined
@@ -137,79 +154,70 @@ class Forex extends Component<any,any>{
       }catch(error){ console.debug(error) }
 }
 
-//   handlePay = async () => {
-//     this.setState({loading: true})
-//     if (this.state.payment_method === "va_cimb_niaga"){
-//       axios.get('https://borneopoint.co.id/public/api/va_cimb_niaga', {params:{
-//         amount: this.state.amount,
-//         pulsa_code: this.state.selectedProduct.split(' - ')[0],
-//         user_id: "erwin",
-//         name: "erwin",
-//         email: "erwin@tri-niche.com",
-//         price_borneo: Number(this.state.price) + 500,
-//         price_mobilepulsa: Number(this.state.price),
-//         payment_method: this.state.payment_method,
-//         product_type: this.props.route.params.itemType
-//       }})
-//       .then(response => {
-//         this.setState({loading: false})
-//         console.log("LALALALALALAL => ", response.data)
-//         if(response.data.Status === 200){
-//           this.goTo('detailPulsa')
-//         }else{
-//           Alert.alert("Oops!", "Something Went Wrong, Try Again Later")
-//         }
-//       }).catch((e, f) => console.log(e, f))
-//     } else {
-//       alert('lala')
-//       this.setState({loading: false})
-//     }
-//     // try{
-//     //   // console.log(this.props.authState)
-//     //   if(!this.props.authState.isSignedIn)
-//     //     return Alert.alert( "Pay", "Please login or register first", [ { text: "Later", onPress: () => {}}, { text: "Login", onPress: () => this.props.navigation.navigate('Auth') },],{ cancelable: false })
+handlePay = async () => {
+  const id_login = await AsyncStorage.getItem('@id_login')
+  this.setState({loading: true})
+  var data = {
+    // product_operator: this.state.product_operator,
+    // product_nominal: this.state.product_nominal,
+    phone: this.state.phone_number,
+    user_id: id_login,
+    product_type: 'topup_platform',
+    // product_id: this.state.product_id,
+    pulsa_price: '0',
+    price_borneo: this.state.price,
+    topup_id: this.state.selectedPlatform.id,
+    topup_rate: this.state.selectedPlatform.rate,
+    topup_conversion: this.state.amount,
+    payment_channel: this.state.selectedPlatform.platform,
+  }
 
+  // product_operator, product_nominal, phone_number, user_id, product_id, pulsa_price, price_borneo
+  axios.get('https://borneopoint.co.id/public/api/top_up_request', {params:{data}})
+  .then(response => {
+    this.setState({loading: false})
+    if (response.data.status === 'Success'){
+      Alert.alert(
+          'Success!',
+          "We're Processing your order",
+          [
+              { text: 'OK', onPress: () => this.props.navigation.reset({ routes: [{ name: 'Main' }] }) }
+          ]
+      )
+    }else{
+      if (response.data.data.message === "Insufficient Balance") {
+        Alert.alert(
+          response.data.data.message,
+          response.data.data.submessage,
+          [
+            { text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: "cancel" },
+            { text: 'Top Up Now', onPress: () => this.props.navigation.push('TopUp') }
+          ]
+        )
+      } else {
+        Alert.alert(
+          response.data.data.message,
+          response.data.data.submessage,
+          [
+            { text: 'OK', onPress: () => console.log('Cancel Pressed'), style: "cancel" }
+          ]
+        )
+      }
+    }
+  })
+  .catch((e) => console.log(e))
+}
 
-//     //   this.setState({loading: true})
-//     //   const account = await getAccountInfo({userId: this.props.authState._id, userToken: this.props.authState.token})
-//     //   this.setState({loading: false})
-//     //   if(account == undefined) throw new Error('failed to get account info')
-//     //   console.debug('account',account)
-//     //   const wallet = account?.data?.wallet
-//     //   if(wallet == undefined) throw new Error('failed to get wallet info')
-//     //   let total = 0
-//     //   if(this.state.selectedItemIndex != -1 && this.state.data && this.state.selectedProductIndex != -1) {
-//     //     // console.log(this.state.data[this.state.selectedItemIndex].extraPrice)
-//     //     // console.log(this.state.data[this.state.selectedItemIndex].product[this.state.selectedProductIndex].pulsa_price)
-//     //     total = this.state.data[this.state.selectedItemIndex].extraPrice + this.state.data[this.state.selectedItemIndex].product[this.state.selectedProductIndex].pulsa_price
-//     //     // console.log('number', number)
-//     //     total = Number.isNaN(total) ? 0 : total
-//     //   }else throw new Error('havent met condition')
-//     //   // console.debug('wallet', wallet)
-//     //   // console.debug('total', total)
-//     //   if(wallet < total) return Alert.alert( "Pay", "Insuficient wallet please top up first", [ { text: "Ok", onPress: () => {}}],{ cancelable: false })
+format = (x) => {
+  if(/^\d+$/.test(x.toString().trim()) === true){
+    var parts = x.toString().split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return parts.join(".");
+  }else{
+    return x;
+  }
+}
 
-//     //   if(this.state.data[this.state.selectedItemIndex].hp_meta !== undefined && this.state.hpValue == undefined) return Alert.alert( "Purchase", "Purchase failed", [ { text: "Ok", onPress: () => {}}],{ cancelable: false })
-//     //   this.setState({loading: true})
-
-//     //   const result = await purchasePrePaid({
-//     //     itemId: this.state.data[this.state.selectedItemIndex]._id,
-//     //     productId: this.state.data[this.state.selectedItemIndex].product[this.state.selectedProductIndex]._id,
-//     //     userToken: this.props.authState.token,
-//     //     hp: this.state.hpValue || ""
-//     //   })
-//     //   console.log('this.state.hpValue', this.state.hpValue)
-//     //   if(result == undefined) return Alert.alert( "Purchase", "Purchase failed", [ { text: "Ok", onPress: () => {}}],{ cancelable: false })
-//     //   this.setState({loading: false})
-
-//     //   this.props.navigation.navigate('Summary', { purchaseId: result.data._id })
-//     //   console.debug(result)
-//     // }catch(error){
-//     //   console.debug(error)
-//     //   if(this.state.loading)
-//     //     this.setState({loading: false})
-//     // }
-//   }
   render = () =>
   <>
     {this.state.loading ?
@@ -298,7 +306,7 @@ class Forex extends Component<any,any>{
             <View style={{ elevation: 2, backgroundColor: 'white', borderRadius  : wp('2.22223%') }}>
                 {this.state.selectedPlatform.length != 0 ?
                     <View>
-                        <Text style={{fontSize: 16, paddingHorizontal: 10, marginTop: wp('5%'), marginBottom: wp('5%')}}>IDR {this.state.selectedPlatform.rate}</Text>
+                        <Text style={{fontSize: 16, paddingHorizontal: 10, marginTop: wp('5%'), marginBottom: wp('5%')}}>IDR {this.format(this.state.selectedPlatform.rate)}</Text>
                     </View>
                     :
                     <View>
@@ -309,22 +317,29 @@ class Forex extends Component<any,any>{
             </View>
         </View>
 
-        <View>
-            <View>
-                <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Amount</Text>
-            </View>
-            <View style={{ elevation: 2, backgroundColor: 'white', borderRadius  : wp('2.22223%') }}>
-                <TextInput onChangeText={(text) => {
-                    this.setState({
-                        amount: text,
+        {this.state.selectedPlatform.length != 0 ?
+          <View>
+              <View>
+                  <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Amount</Text>
+              </View>
+              <View style={{ elevation: 2, backgroundColor: 'white', borderRadius  : wp('2.22223%') }}>
+                  <TextInput
+                    onChangeText={(text) => {
+                      this.setState({
+                        amount: text*1,
                         price: +text * +this.state.selectedPlatform.rate
-                    })
+                      })
+                    }}
+                    style={{fontSize: 16, paddingHorizontal: 10}}
+                    keyboardType='phone-pad'
+                  />
+              </View>
+          </View>
+          :
+          null
+        }
 
-                    }} style={{fontSize: 16, paddingHorizontal: 10}} keyboardType='phone-pad'></TextInput>
-            </View>
-        </View>
-
-        { this.state.selectedPlatform.length != 0 && this.state.amount != '' ?
+        {/* { this.state.selectedPlatform.length != 0 && this.state.amount != '' ?
       <View style={{ flex:1, marginTop: wp('3') }}>
         <View>
           <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Payment Method</Text>
@@ -377,13 +392,13 @@ class Forex extends Component<any,any>{
       </View>
       :
       null
-    }
+    } */}
     </ScrollView>
       
     <View style={{position: 'relative', bottom: 0 , paddingTop: wp('2.5%'), paddingBottom: wp('5%'), width: '100%', backgroundColor: 'white', elevation: 16, flexDirection: 'row'}}>
       <View style={{flexDirection: 'column', flex: 1, marginLeft: wp('5%'), justifyContent: 'center'}}>
         <Text style={{fontWeight: 'bold', fontSize: wp('4%')}}>Total</Text>
-        <Text style={{color: '#1DF318', fontWeight: 'bold', fontSize: wp('4%')}}>Rp {this.state.price}</Text>
+        <Text style={{color: '#1DF318', fontWeight: 'bold', fontSize: wp('4%')}}>Rp {this.format(this.state.price)}</Text>
       </View>
       <View style={{
         // justifyContent: 'flex-end'
@@ -391,8 +406,8 @@ class Forex extends Component<any,any>{
         marginRight: wp('5%')
       }}>
         <TouchableOpacity
-          onPress={() => { this.setState({ visible: true }) }}
-          style={{ backgroundColor: this.state.selectedOperator != -1 && this.state.selectedPlatform.length != 0 && this.state.payment_method != undefined && this.state.amount != '' ? '#3269B3': '#ccc', borderRadius: wp('2.223%'), padding: wp('2.5%'), flexDirection: 'row'}} disabled={!(this.state.selectedOperator != -1 && this.state.selectedPlatform.length != 0 && this.state.payment_method != undefined && this.state.amount != '')}>
+          onPress={() => this.handlePay()}
+          style={{ backgroundColor: this.state.selectedOperator != -1 && this.state.selectedPlatform.length != 0 && this.state.amount != '' ? '#3269B3': '#ccc', borderRadius: wp('2.223%'), padding: wp('2.5%'), flexDirection: 'row'}} disabled={!(this.state.selectedOperator != -1 && this.state.selectedPlatform.length != 0 && this.state.amount != '')}>
           <Image source={logo} style={{marginRight: wp('2.5%')}}/>
           <Text style={{fontWeight: 'bold', fontSize: wp('5%'), color: 'white'}}>Pay</Text>
         </TouchableOpacity>
