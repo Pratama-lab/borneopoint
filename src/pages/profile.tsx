@@ -1,12 +1,12 @@
 import React, { Component } from 'react'
-import { ScrollView, View, Image, Text,TouchableOpacity, Alert, TextInput, ActivityIndicator, StyleSheet } from 'react-native'
+import { ScrollView, View, Image, Text,TouchableOpacity, Alert, TextInput, ActivityIndicator, StyleSheet, BackHandler, ToastAndroid } from 'react-native'
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen'
 import QRCode from 'react-native-qrcode-svg'
 import capitalizeWords from '../functions/capitalizeWords'
 import { getAccountInfo, editProfile } from '../api'
 import { RNCamera } from 'react-native-camera';
 import FastImage from 'react-native-fast-image'
-
+import auth from '@react-native-firebase/auth'
 import styles from '../styles/profile'
 import { AuthContext } from '../context'
 
@@ -19,6 +19,7 @@ const camera = require('../assets/icons/camera.png')
 const pencil = require('../assets/icons/pencil.png')
 const logo = require('../assets/miniLogoColored.png')
 
+let backPressed = 0;
 
 interface IProfileProps{
   navigation: any,
@@ -43,6 +44,8 @@ class Profile extends Component<IProfileProps>{
       fileName: null,
       file_image: null,
       data: null,
+      backPressed: 1,
+      email_valid: ''
     }
   }
   camera
@@ -73,6 +76,8 @@ class Profile extends Component<IProfileProps>{
     //     { cancelable: false }
     //   )
     // }
+
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton.bind(this));
 
     const check_login = await AsyncStorage.getItem('@id_login')
 
@@ -181,7 +186,9 @@ class Profile extends Component<IProfileProps>{
       // console.log('berhasil')
       this.setState({
         edit: false,
+        loading: true
       })
+      this.componentDidMount()
     }
     catch (error) {
       console.log('update_user_profile : ' + error);
@@ -189,7 +196,8 @@ class Profile extends Component<IProfileProps>{
   }
   handleSignOut = async () => {
     try{
-      await AsyncStorage.removeItem('@id_login')
+      await AsyncStorage.clear()
+      auth().signOut()
       this.props.navigation.reset({
         routes: [{ name: 'Main' }],
       })
@@ -224,6 +232,30 @@ class Profile extends Component<IProfileProps>{
       this.state.data = await this.camera.takePictureAsync(options);
       this.setState({pictureCacheUri : this.state.data.uri, camera: false})
       // console.log(data.uri);
+    }
+  }
+  validate = (text) => {
+    console.log(text);
+    let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (reg.test(text) === false) {
+      console.log("Email is Not Correct");
+      this.setState({ inputEmail: text, email_valid: 'Email is Not Correct' })
+      return false;
+    }
+    else {
+      this.setState({ inputEmail: text, email_valid: 'Email is Correct' })
+      console.log("Email is Correct");
+    }
+  }
+  handleBackButton = () => {
+    if (backPressed > 0) {
+      BackHandler.exitApp();
+      backPressed = 0;
+    } else {
+      backPressed++;
+      ToastAndroid.show("Press Again To Exit", ToastAndroid.SHORT);
+      setTimeout(() => { backPressed = 0 }, 2000);
+      return true;
     }
   }
   render = () => 
@@ -324,8 +356,25 @@ class Profile extends Component<IProfileProps>{
             </View>
             <View style={styles.infoContainer}>
               <Text style={styles.infoLabel}>Email</Text>
-              <Text style={styles.infoText}>{capitalizeWords(this.state.email)}</Text>
+              {
+                this.state.edit !== true ?
+                  (this.state.email === null || this.state.email === 'null' ?
+                    <Text style={styles.infoText}>-</Text>
+                    :
+                    <Text style={styles.infoText}>{capitalizeWords(this.state.email)}</Text>
+                  )
+                  :
+                  <TextInput style={[styles.infoText, { borderColor: 'black', borderWidth: 1, borderRadius: 12}]} value={this.state.inputEmail} onChangeText={(value) => this.validate(value)} keyboardType={'email-address'}/>
+              }
             </View>
+            {this.state.email_valid === 'Email is Not Correct' ?
+              <View style={styles.infoContainer}>
+                <View style={styles.infoText} />
+                <Text style={[ styles.infoText, { color: 'red' }]}>Invalid email address</Text>
+              </View>
+              :
+              null
+            }
             <View style={styles.infoContainer}>
               <Text style={styles.infoLabel}>Phone</Text>
               {

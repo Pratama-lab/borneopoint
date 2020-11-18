@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View, Dimensions, Text, Image, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native'
+import { View, Dimensions, Text, Image, TouchableOpacity, TextInput, Alert, ScrollView, BackHandler } from 'react-native'
 import {AuthContext} from '../context'
 import styles from '../styles/ongoingPayment'
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
@@ -35,6 +35,15 @@ class OngoingPayment extends Component<any,any>{
       product_nominal: this.props.route.params.data.product_nominal,
       sn : this.props.route.params.data.sn
     })
+  }
+
+  componentWillMount = () => {
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
+  }
+
+  handleBackButton = () => {
+    this.props.navigation.pop();
+    return true;
   }
 
   adjustDesign = (height) => {

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert, TextInput, ToastAndroid } from 'react-native'
+import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert, TextInput, ToastAndroid, BackHandler } from 'react-native'
 
 import { SplashRoutingProps } from '../types/index'
 import styles from '../styles/signIn'
@@ -24,7 +24,8 @@ class SignUp extends Component<any,{}>{
     this.state = {
       email: '',
       email_valid: '',
-      email_native: ''
+      email_native: '',
+      phone_number: null
     }
   }
   private email
@@ -39,6 +40,10 @@ class SignUp extends Component<any,{}>{
     })
   }
 
+  componentWillMount = () => {
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
+  }
+
   getValueName = (text: string) => {
     this.name = text
   }
@@ -49,14 +54,6 @@ class SignUp extends Component<any,{}>{
 
   getValuePassword = (text: string) => {
     this.password = text
-  }
-
-  navigateSignIn = () => {
-    try{
-      this.props.navigation.reset({
-        routes: [{ name: 'SignIn' }],
-      })
-    }catch(error){ console.debug(error) }
   }
 
   handleGoogleSignIn = async () => {
@@ -242,6 +239,7 @@ class SignUp extends Component<any,{}>{
       nama: this.name,
       email: this.state.email_native,
       password: this.password,
+      phone: this.state.phone_number
     }})
     .then((resp) => {
       console.log(resp.data.id_login)
@@ -270,6 +268,11 @@ class SignUp extends Component<any,{}>{
     }
   }
 
+  handleBackButton = () => {
+    this.props.navigation.pop();
+    return true;
+  }
+
   render = () => 
     <View style={styles.layout}>
       <LinearGradient colors={[ '#6FC3F7', '#3269B3']} style={styles.linearGradient}/>
@@ -278,7 +281,7 @@ class SignUp extends Component<any,{}>{
         flexDirection   : 'column',
         alignItems      : 'center',
         justifyContent  : 'center',
-        marginTop       : wp('20%'),
+        marginTop       : wp('10%'),
         zIndex          : 1
       }}>
         <View style={styles.logoImageContainer}>
@@ -318,12 +321,18 @@ class SignUp extends Component<any,{}>{
           <Text style={styles.loginText}>Sign Up</Text>
         </TouchableOpacity>
         <View style={styles.socialLoginContainer}>
+            <TouchableOpacity onPress={() => this.props.navigation.push('Phones')} style={{ width: wp('35%'), height: wp('11%'), backgroundColor: 'white', elevation: 4, borderRadius: wp('2.22223%'), alignItems: 'center', flexDirection: 'row' }}>
+              <Image source={require('../assets/icons/phone-call.png')} style={{ width: wp('5%'), height: wp('5%'), marginLeft: wp('2%'), tintColor: '#00FF66' }} />
+              <Text style={{ marginLeft: wp('2%'), fontSize: wp('3.5%') }}>Phone Number</Text>
+            </TouchableOpacity>
+          </View>
+        <View style={styles.socialLoginContainer}>
           <GoogleButton onPress={this.handleGoogleSignIn} />
           <View style={styles.socialDistancing}/>
           <FacebookButton onPress={this.handleFacebookSignIn} />
         </View>
       </View>
-      <Text style={styles.noAccountInfo}>Already have an account ? Click here <Text onPress={this.navigateSignIn} style={styles.linkText}>Sign In</Text></Text>
+      <Text style={styles.noAccountInfo}>Already have an account ? Click here <Text onPress={() => this.props.navigation.pop()} style={styles.linkText}>Sign In</Text></Text>
     </View>
 }
 

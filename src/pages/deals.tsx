@@ -1,6 +1,6 @@
-import React, { Component }           from 'react'
-import { FlatList, View, ActivityIndicator, StyleSheet, ScrollView, TouchableOpacity }                   from 'react-native'
-import DealsItem                      from '../components/dealsItem'
+import React, { Component } from 'react'
+import { FlatList, View, ActivityIndicator, StyleSheet, ScrollView, TouchableOpacity, BackHandler, ToastAndroid } from 'react-native'
+import DealsItem from '../components/dealsItem'
 import { heightPercentageToDP, widthPercentageToDP as wp }  from 'react-native-responsive-screen'
 import { getAllDeal } from '../api'
 
@@ -10,11 +10,14 @@ import FastImage from 'react-native-fast-image'
 
 const url = 'https://borneopoint.co.id/public/asset/images/'
 
+let backPressed = 0;
+
 class Deals extends Component{
   constructor(props:any){
     super(props);
     this.state = {
       loading: true,
+      backPressed: 1
     }
   }
   componentDidMount = async () => {
@@ -32,6 +35,8 @@ class Deals extends Component{
     //   console.debug(error)
     // }
 
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton.bind(this));
+
     axios.get('https://borneopoint.co.id/public/api/get_all_deals')
     .then(resp => {
       this.setState({
@@ -47,6 +52,18 @@ class Deals extends Component{
       this.componentDidMount()
     }catch(error){
       console.log(error)
+    }
+  }
+
+  handleBackButton = () => {
+    if (backPressed > 0) {
+      BackHandler.exitApp();
+      backPressed = 0;
+    } else {
+      backPressed++;
+      ToastAndroid.show("Press Again To Exit", ToastAndroid.SHORT);
+      setTimeout(() => { backPressed = 0 }, 2000);
+      return true;
     }
   }
   

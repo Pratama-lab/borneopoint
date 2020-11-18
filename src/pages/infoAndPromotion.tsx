@@ -1,10 +1,17 @@
 import React, { Component } from 'react'
-import { ScrollView,Text, Image,View } from 'react-native'
+import { ScrollView,Text, Image, View, BackHandler } from 'react-native'
 import { widthPercentageToDP } from 'react-native-responsive-screen'
 
 class InfoAndPromotion extends Component<any>{
   constructor(props){
     super(props)
+  }
+  componentWillMount = () => {
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
+  }
+  handleBackButton = () => {
+    this.props.navigation.pop();
+    return true;
   }
   render= () => 
     <ScrollView style={{flex: 1}} contentContainerStyle={{padding: widthPercentageToDP('5%')}}>

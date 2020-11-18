@@ -45,7 +45,6 @@ export default StyleSheet.create({
     marginTop: wp('3.334')
   },
   inputContainer: {
-    marginTop: wp('5%'),
     zIndex: 1,
     justifyContent: 'center',
     alignItems: 'center',

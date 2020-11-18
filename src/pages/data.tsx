@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { ScrollView , Alert, View, Text, TextInput, TouchableOpacity, Image, ActivityIndicator, FlatList, StyleSheet, PermissionsAndroid, ToastAndroid} from 'react-native';
+import { ScrollView , Alert, View, Text, TextInput, TouchableOpacity, Image, ActivityIndicator, FlatList, StyleSheet, PermissionsAndroid, ToastAndroid, BackHandler } from 'react-native';
 import FastImage from 'react-native-fast-image'
 import { widthPercentageToDP  as wp} from 'react-native-responsive-screen';
 import axios from 'axios'
@@ -66,6 +66,15 @@ class Data extends Component<any,any>{
         })
       }
     }).catch(e => console.log("GET_ALL_OPERATOR => ", data))
+  }
+
+  componentWillMount = () => {
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
+  }
+
+  handleBackButton = () => {
+    this.props.navigation.pop();
+    return true;
   }
 
   refresh = () => this.componentDidMount
@@ -148,12 +157,6 @@ class Data extends Component<any,any>{
       this.setState({ loading: true})
       
     } else { this.setState({all_product: undefined, selectedProduct: -1, price: 0, payment_method: undefined}) }
-  }
-
-  goTo = (title, params?: any) => {
-    try{
-      this.props.navigation.navigate(title, params)
-    }catch(error){ console.debug(error) }
   }
 
   selectingPaymentMethod = (paymentName) => {

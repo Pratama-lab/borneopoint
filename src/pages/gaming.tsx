@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import {Picker} from '@react-native-community/picker';
-import { ScrollView , Alert, View, Text, TextInput, TouchableOpacity, Image, ActivityIndicator, FlatList, StyleSheet} from 'react-native';
+import { ScrollView , Alert, View, Text, TextInput, TouchableOpacity, Image, ActivityIndicator, FlatList, StyleSheet, BackHandler } from 'react-native';
 import { widthPercentageToDP  as wp} from 'react-native-responsive-screen';
 import axios from 'axios'
 import Dialog, { DialogFooter, DialogButton, DialogContent, DialogTitle } from 'react-native-popup-dialog';
@@ -47,8 +47,6 @@ class Mobile extends Component<any,any>{
     hp: undefined,
   }
 
-
-
   componentDidMount = async () => {
     axios.get('https://borneopoint.co.id/public/api/get_all_operator', {params:{
       operator: this.props.route.params.itemType
@@ -63,6 +61,15 @@ class Mobile extends Component<any,any>{
         })
       }
     }).catch(e => console.log("GET_ALL_OPERATOR => ", data))
+  }
+
+  componentWillMount = () => {
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
+  }
+
+  handleBackButton = () => {
+    this.props.navigation.pop();
+    return true;
   }
 
   refresh = () => this.componentDidMount
@@ -173,12 +180,6 @@ class Mobile extends Component<any,any>{
         price_pulsa: 0,
       })
     }
-  }
-
-  goTo = (title, params?: any) => {
-    try{
-      this.props.navigation.navigate(title, params)
-    }catch(error){ console.debug(error) }
   }
 
   selectingPaymentMethod = (paymentName) => {

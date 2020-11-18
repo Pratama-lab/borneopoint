@@ -1,11 +1,12 @@
 import React, { Component } from 'react'
-import { View, FlatList, TouchableOpacity, Text, ActivityIndicator, StyleSheet, Image, Alert, ToastAndroid } from 'react-native'
+import { View, FlatList, TouchableOpacity, Text, ActivityIndicator, StyleSheet, Image, Alert, ToastAndroid, BackHandler } from 'react-native'
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen'
 import { AuthContext } from '../context'
 import AsyncStorage from '@react-native-community/async-storage'
 import axios from 'axios'
 import Clipboard from '@react-native-community/clipboard'
 
+let backPressed = 0;
 
 class History extends Component<any>{
   constructor(props: any){
@@ -13,7 +14,8 @@ class History extends Component<any>{
     this.state = {
       loading: true,
       pending: undefined,
-      success: undefined
+      success: undefined,
+      backPressed: 1
     }
   }
   componentDidMount = async () => {
@@ -32,6 +34,8 @@ class History extends Component<any>{
 
     //   console.debug(error)
     // }
+
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton.bind(this));
 
     const check_login = await AsyncStorage.getItem('@id_login');
 
@@ -81,6 +85,18 @@ class History extends Component<any>{
       return parts.join(".");
     }else{
       return x;
+    }
+  }
+
+  handleBackButton = () => {
+    if (backPressed > 0) {
+      BackHandler.exitApp();
+      backPressed = 0;
+    } else {
+      backPressed++;
+      ToastAndroid.show("Press Again To Exit", ToastAndroid.SHORT);
+      setTimeout(() => { backPressed = 0 }, 2000);
+      return true;
     }
   }
 
@@ -139,7 +155,7 @@ class History extends Component<any>{
                           null
                           :
                           <View style={{ marginLeft: wp('2%'), width: wp('10%'), alignItems: 'center', justifyContent: 'center' }}>
-                            <TouchableOpacity onPress={() => this.props.navigation.navigate('ongoingPayment', {data: item})}>
+                            <TouchableOpacity onPress={() => this.props.navigation.push('ongoingPayment', {data: item})}>
                               <Image source={require('../assets/icons/arrowDown.png')} style={{ transform: [{ rotate: '270deg' }] }} />
                             </TouchableOpacity>
                           </View>
@@ -491,7 +507,7 @@ class History extends Component<any>{
                           </View>
                         </View>
                         <View style={{ width: wp('10%'), alignItems: 'center', justifyContent: 'center' }}>
-                          <TouchableOpacity onPress={() => this.props.navigation.navigate('ongoingPayment', {data: item})}>
+                          <TouchableOpacity onPress={() => this.props.navigation.push('ongoingPayment', {data: item})}>
                             <Image source={require('../assets/icons/arrowDown.png')} style={{ transform: [{ rotate: '270deg' }] }} />
                           </TouchableOpacity>
                         </View>
@@ -761,7 +777,7 @@ class History extends Component<any>{
       </>
       :
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <TouchableOpacity onPress={() => this.props.navigation.navigate('Auth')}><Text style={{textDecorationLine: 'underline'}}>Please Login First</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => this.props.navigation.push('SignIn')}><Text style={{textDecorationLine: 'underline'}}>Please Login First</Text></TouchableOpacity>
       </View>
     }
   </>

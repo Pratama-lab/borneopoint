@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { View, Text, Image, ActivityIndicator } from 'react-native'
-
+import auth from '@react-native-firebase/auth'
 import { SplashRoutingProps } from '../types/index'
 import styles from '../styles/splash'
 import { widthPercentageToDP  as wp} from 'react-native-responsive-screen'
@@ -37,6 +37,39 @@ class Splash extends Component<any,{}>{
     // this.props.navigation.reset({
     //   routes: [{ name: 'Main' }],
     // })
+
+    auth().onAuthStateChanged(async user => {
+      if (user) {
+        console.log("logged in");
+        // console.log("phone => ", await AsyncStorage.getItem('@phone'))
+        if (await AsyncStorage.getItem('@id_login') !== null) {
+          const id_login = await AsyncStorage.getItem('@id_login')
+          axios.get('https://borneopoint.co.id/api/get_user', {params: {
+            id_login: id_login
+          }})
+          .then(resp => {
+            if (resp.data.status === 'Inactive') {
+              this.props.navigation.navigate('KtpnPhone')
+            } else if (resp.data.status === 'Declined') {
+              this.props.navigation.navigate('KtpnPhone')
+            } else if (resp.data.status === 'Waiting') {
+              this.props.navigation.navigate('Waiting')
+            } else if (resp.data.status === 'Active') {
+              this.props.authState.setup()
+              this.props.navigation.reset({
+                routes: [{ name: 'Main' }],
+              })
+            }
+          })
+        } else if (await AsyncStorage.getItem('@phone') !== null) {
+          this.props.navigation.reset({
+            routes: [{ name: 'inputName' }],
+          })
+        }
+      } else {
+        console.log("not logged in");
+      }
+    });
 
     const check_login = await AsyncStorage.getItem('@id_login')
 

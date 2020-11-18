@@ -1,9 +1,8 @@
 import React, { Component } from 'react'
-import { View, Text, ScrollView, Image, TouchableOpacity, FlatList, ActivityIndicator, Alert, StyleSheet, ToastAndroid } from 'react-native'
+import { View, Text, ScrollView, Image, TouchableOpacity, FlatList, ActivityIndicator, Alert, StyleSheet, ToastAndroid, BackHandler } from 'react-native'
 import styles from '../styles/home'
 import InfoItem from '../components/infoItem'
 import { getAllInfoAndPromotion, getAccountInfo } from '../api'
-
 import { AuthContext } from '../context'
 import { widthPercentageToDP, heightPercentageToDP } from 'react-native-responsive-screen'
 import capitalizeWords from '../functions/capitalizeWords'
@@ -27,6 +26,8 @@ const vouchers = require('../assets/icons/vouchers.png')
 const others = require('../assets/icons/others.png')
 const url = 'https://borneopoint.co.id/public/storage/media_images/'
 
+let backPressed = 0;
+
 class Home extends Component<any,any>{
   constructor(props: any){
     super(props);
@@ -37,7 +38,8 @@ class Home extends Component<any,any>{
       accountInfo: undefined,
       saldo: 0,
       deskripsi: '',
-      description: [{ 'desc': 'hai cok' }, { 'desc': 'hai cok' }, { 'desc': 'hai cok' }, { 'desc': 'hai cok' }, { 'desc': 'hai cok' }]
+      description: [{ 'desc': 'hai cok' }, { 'desc': 'hai cok' }, { 'desc': 'hai cok' }, { 'desc': 'hai cok' }, { 'desc': 'hai cok' }],
+      backPressed: 1
     }
   }
   componentDidMount = async () => {
@@ -68,6 +70,8 @@ class Home extends Component<any,any>{
     //     { cancelable: false }
     //   )
     // }
+    
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton.bind(this))
 
     const check_login = await AsyncStorage.getItem('@id_login');
 
@@ -106,14 +110,29 @@ class Home extends Component<any,any>{
       })
     })
   }
+
   goTo = (title, params?: any) => {
     try{
-      this.props.navigation.navigate(title, params)
+      this.props.navigation.push(title, params)
     }catch(error){ console.debug(error) }
   }
+
   infoAndPromotion = (name,description):any => {
     this.props.navigation.navigate('InfoAndPromotion',{ name, description})
   }
+
+  handleBackButton = () => {
+    if (backPressed > 0) {
+      BackHandler.exitApp();
+      backPressed = 0;
+    } else {
+      backPressed++;
+      ToastAndroid.show("Press Again To Exit", ToastAndroid.SHORT);
+      setTimeout(() => { backPressed = 0 }, 2000);
+      return true;
+    }
+  }
+  
   render = () =>
   <>
     {this.state.loading ?
@@ -130,7 +149,7 @@ class Home extends Component<any,any>{
       {this.state.id_login === null ?
         <View style={styles.walletCard}>
           <View style={[styles.profileWalletContainer, { justifyContent: 'center'}]}>
-            <TouchableOpacity style={{ backgroundColor: '#3269B3', width: widthPercentageToDP('60%'), justifyContent: 'center', alignItems: 'center', borderRadius: widthPercentageToDP('8.8888%')}} onPress={() => this.goTo('Auth')}>
+            <TouchableOpacity style={{ backgroundColor: '#3269B3', width: widthPercentageToDP('60%'), justifyContent: 'center', alignItems: 'center', borderRadius: widthPercentageToDP('8.8888%')}} onPress={() => this.goTo('SignIn')}>
               <Text style={{color: 'white', fontWeight: 'bold', fontSize: widthPercentageToDP('5%'), padding: widthPercentageToDP('1%')}}>Login / Register</Text>
             </TouchableOpacity>
           </View>
@@ -335,7 +354,7 @@ class Home extends Component<any,any>{
             horizontal={true}
             extraData={this.state}
             renderItem={({item}) => (
-              <TouchableOpacity onPress={() => this.props.navigation.push('InfoDetail', {id: item.id})} style={{ width: widthPercentageToDP('50%'), borderRadius: widthPercentageToDP('2.5%'), elevation: 3, marginLeft: widthPercentageToDP('5%'), backgroundColor: 'white', marginTop: widthPercentageToDP('2%'), marginBottom: widthPercentageToDP('1%'), marginRight: widthPercentageToDP('1%'), alignItems: 'center' }}>
+              <TouchableOpacity onPress={() => this.goTo('InfoDetail', {id: item.id})} style={{ width: widthPercentageToDP('50%'), borderRadius: widthPercentageToDP('2.5%'), elevation: 3, marginLeft: widthPercentageToDP('5%'), backgroundColor: 'white', marginTop: widthPercentageToDP('2%'), marginBottom: widthPercentageToDP('1%'), marginRight: widthPercentageToDP('1%'), alignItems: 'center' }}>
                 <FastImage source={{ uri: url+item.images}} style={{ width: '100%', height: heightPercentageToDP('20%'), borderRadius: widthPercentageToDP('2.5%') }} />
                 <View style={{ marginLeft: widthPercentageToDP('2%'), marginRight: widthPercentageToDP('2%'), marginBottom: widthPercentageToDP('2%'), marginTop: widthPercentageToDP('2%') }}>
                   <Text numberOfLines={5}>{item.description}</Text>

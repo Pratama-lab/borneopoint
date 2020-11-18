@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { ScrollView,Text, Image,View, ActivityIndicator, StyleSheet } from 'react-native'
+import { ScrollView,Text, Image,View, ActivityIndicator, StyleSheet, BackHandler } from 'react-native'
 import { widthPercentageToDP } from 'react-native-responsive-screen'
 import FastImage from 'react-native-fast-image'
 import AsyncStorage from '@react-native-community/async-storage'
@@ -29,6 +29,15 @@ class DealDetail extends Component<any>{
         deskripsi: resp.data[0].deals_description
       })
     })
+  }
+
+  componentWillMount = () => {
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
+  }
+
+  handleBackButton = () => {
+    this.props.navigation.pop();
+    return true;
   }
 
   refresh = () => {

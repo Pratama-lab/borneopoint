@@ -34,6 +34,9 @@ import VouchersScreen from './pages/vouchers'
 import KtpnPhoneScreen from './pages/ktpnphone'
 import infoDetailScreen from './pages/infoDetail'
 import WaitingScreen from './pages/waiting'
+import PhoneScreen from './pages/signinphone'
+import PhonesScreen from './pages/signupphone'
+import InputNameScreen from './pages/inputName'
 // import TransferScreen from './pages'
 import { AuthContext, AuthState } from './context'
 
@@ -121,21 +124,6 @@ const MainStack = () => {
   )
 }
 
-const AuthStack = () => {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen name={"SignIn"} component={SignInScreen} options={{
-        header : (props: StackHeaderProps) => null,
-        // animationEnabled: true,
-      }}/> 
-      <Stack.Screen name={"SignUp"} component={SignUpScreen} options={{
-        header : (props: StackHeaderProps) => null,
-        // animationEnabled: true,
-      }}/> 
-    </Stack.Navigator>
-  )
-}
-
 const RootStack = () => {
   return (
     <NavigationContainer>
@@ -197,10 +185,14 @@ const RootStack = () => {
               header            : (props: StackHeaderProps) => <PageHeader {...props} title={'Purchase'}/>,
               // animationEnabled: true,
             }}/>
-            <Stack.Screen name="Auth" component={AuthStack} options={{
-              header            : (props: StackHeaderProps) => null,
-                // animationEnabled  : true,
-            }}/>
+            <Stack.Screen name={"SignIn"} component={SignInScreen} options={{
+              header : (props: StackHeaderProps) => null,
+              // animationEnabled: true,
+            }}/> 
+            <Stack.Screen name={"SignUp"} component={SignUpScreen} options={{
+              header : (props: StackHeaderProps) => null,
+              // animationEnabled: true,
+            }}/> 
             <Stack.Screen name="detailPulsa" component={detailPulsaScreen} options={{
               header            : (props: StackHeaderProps) => <PageHeader {...props} title={'Ongoing Payment'}/>,
               // animationEnabled: true,
@@ -242,6 +234,18 @@ const RootStack = () => {
               // animationEnabled: true,
             }}/>
             <Stack.Screen name="Waiting" component={WaitingScreen} options={{
+              header            : (props: StackHeaderProps) => null,
+              // animationEnabled: true,
+            }}/>
+            <Stack.Screen name="Phone" component={PhoneScreen} options={{
+              header            : (props: StackHeaderProps) => null,
+              // animationEnabled: true,
+            }}/>
+            <Stack.Screen name="Phones" component={PhonesScreen} options={{
+              header            : (props: StackHeaderProps) => null,
+              // animationEnabled: true,
+            }}/>
+            <Stack.Screen name="inputName" component={InputNameScreen} options={{
               header            : (props: StackHeaderProps) => null,
               // animationEnabled: true,
             }}/>

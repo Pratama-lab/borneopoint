@@ -23,7 +23,7 @@ export default class ResetPassword extends Component{
 
   resetPassword = () => {
     this.setState({ loading: true })
-    axios.post('http://borneopoint.co.id/api/password/reset', {email: this.state.email})
+    axios.post('https://borneopoint.co.id/api/password/reset', {email: this.state.email})
     .then(resp => {
       console.log(resp.data.data)
       if (resp.data.data.message === 'We have e-mailed your password reset link!') {

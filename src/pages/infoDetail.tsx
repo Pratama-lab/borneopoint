@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, ScrollView } from 'react-native'
+import { View, Text, ScrollView, BackHandler } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen'
 import AsyncStorage from '@react-native-community/async-storage'
@@ -28,6 +28,15 @@ class InfoDetail extends React.Component {
                 deskripsi: resp.data[0].description
             })
         })
+    }
+
+    componentWillMount = () => {
+        BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
+    }
+
+    handleBackButton = () => {
+        this.props.navigation.pop();
+        return true;
     }
 
     render = () => 

@@ -27,7 +27,7 @@ export default class ktpnphone extends React.Component {
             selfiektp: '',
             loading: false,
             name: undefined,
-            email: undefined,
+            email: '',
             status: '',
         }
     }
@@ -44,6 +44,7 @@ export default class ktpnphone extends React.Component {
             this.setState({
                 name: resp.data.name,
                 email: resp.data.email,
+                phone_number: resp.data.phone,
                 status: resp.data.status
             })
             // console.log(resp.data)
@@ -64,8 +65,8 @@ export default class ktpnphone extends React.Component {
 	    });
 		data.append("id_login", id_login);
 		data.append("name", this.state.name);
-		data.append("email", this.state.email);
-		data.append("phone", this.state.phone_number);
+        data.append("email", this.state.email);
+        data.append("phone", this.state.phone_number);
         data.append("no_ktp", this.state.ktp);
         data.append("verification", '');
 	    return data;
@@ -221,18 +222,6 @@ export default class ktpnphone extends React.Component {
                     </View>
                     <View style={{ alignItems: 'center', marginTop: wp('5%') }}>
                         <View style={{ width: wp('80%') }}>
-                            <Text style={{ fontWeight: 'bold', fontSize: wp('5%'), color: 'white' }}>Phone Number</Text>
-                        </View>
-                        <TextInput
-                            style={{ width: wp('80%'), height: wp('12%'), backgroundColor: 'white', elevation: 4, borderRadius: wp('2.22223%'), marginTop: wp('3%'), marginBottom: wp('2%') }}
-                            placeholder="Enter Your Phone Number"
-                            keyboardType={'phone-pad'}
-                            onChangeText={(text) => this.setState({ phone_number: text })}
-                            value={this.state.phone_number}
-                        />
-                    </View>
-                    <View style={{ alignItems: 'center', marginTop: wp('5%') }}>
-                        <View style={{ width: wp('80%') }}>
                             <Text style={{ fontWeight: 'bold', fontSize: wp('5%'), color: 'white' }}>KTP</Text>
                         </View>
                         <View style={{ width: wp('80%'), height: wp('40%'), marginTop: wp('3%'), alignItems: 'center', justifyContent: 'center' }}>
@@ -248,7 +237,7 @@ export default class ktpnphone extends React.Component {
                         </View>
                     </View>
                     <View style={{ alignItems: 'center', marginTop: wp('5%'), marginBottom: wp('5%') }}>
-                        <TouchableOpacity onPress={this.submit} style={{ width: wp('30%'), backgroundColor: (this.state.ktp && this.state.phone_number && this.state.ktp_image && this.state.selfiektp ? '#FFF' : '#CCC'), borderRadius: wp('10%'), elevation: 4, alignItems: 'center' }} disabled={this.state.ktp === undefined || this.state.phone_number === undefined || this.state.ktp_image === '' || this.state.selfiektp === ''}>
+                        <TouchableOpacity onPress={this.submit} style={{ width: wp('30%'), backgroundColor: (this.state.ktp && this.state.ktp_image && this.state.selfiektp ? '#FFF' : '#CCC'), borderRadius: wp('10%'), elevation: 4, alignItems: 'center' }} disabled={this.state.ktp === undefined || this.state.ktp_image === '' || this.state.selfiektp === ''}>
                             <Text style={{ marginTop: wp('2%'), marginBottom: wp('2%'), fontWeight: 'bold' }}>Submit</Text>
                         </TouchableOpacity>
                     </View>

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert, TextInput, ToastAndroid } from 'react-native'
+import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert, TextInput, ToastAndroid, BackHandler } from 'react-native'
 
 import styles from '../styles/signIn'
 import { widthPercentageToDP as wp} from 'react-native-responsive-screen'
@@ -29,7 +29,7 @@ class SignIn extends Component<any,{}>{
     this.state = {
       email: '',
       email_valid: '',
-      email_native: ''
+      email_native: '',
     }
   }
   private email
@@ -41,6 +41,10 @@ class SignIn extends Component<any,{}>{
       loginHint: '',  // [iOS] The user's ID, or email address, to be prefilled in the authentication UI if possible. [See docs here](https://developers.google.com/identity/sign-in/ios/api/interface_g_i_d_sign_in.html#a0a68c7504c31ab0b728432565f6e33fd)
       forceCodeForRefreshToken: true  // [Android] related to `serverAuthCode`, read the docs link below *.
     })
+
+  }
+  componentWillMount = () => {
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
   }
   getValueEmail = (text: string) => {
     this.email = text
@@ -49,13 +53,6 @@ class SignIn extends Component<any,{}>{
     this.password = text
   }
   
-  navigateRegister = () => {
-    try{
-      this.props.navigation.reset({
-        routes: [{ name: 'SignUp' }],
-      })
-    }catch(error){ console.debug(error) }
-  }
   handleGoogleSignIn = async () => {
     try {
       await GoogleSignin.hasPlayServices();
@@ -220,9 +217,9 @@ class SignIn extends Component<any,{}>{
   //   }
   // }
   signIn = () => {
-    axios.post('http://borneopoint.co.id/api/login', {email: this.state.email_native, password: this.password})
+    axios.post('https://borneopoint.co.id/api/login', {email: this.state.email_native, password: this.password})
     .then(resp => {
-      console.log(resp.data)
+      // alert(JSON.stringify(resp.data))
       if (resp.data.data.message === 'These credentials do not match our records.') {
         ToastAndroid.show("Incorrect email or password", ToastAndroid.SHORT)
       } else {
@@ -248,6 +245,7 @@ class SignIn extends Component<any,{}>{
     })
     .catch(err => {
       console.log("INSERT USER BY EMAIL => "+err)
+      // alert(JSON.stringify(err))
     })
   }
 
@@ -263,6 +261,11 @@ class SignIn extends Component<any,{}>{
       this.setState({ email_native: text, email_valid: 'Email is Correct' })
       console.log("Email is Correct");
     }
+  }
+
+  handleBackButton = () => {
+    this.props.navigation.pop();
+    return true;
   }
 
   render = () => 
@@ -315,12 +318,18 @@ class SignIn extends Component<any,{}>{
             <Text style={styles.loginText}>Sign In</Text>
           </TouchableOpacity>
           <View style={styles.socialLoginContainer}>
+            <TouchableOpacity onPress={() => this.props.navigation.push('Phone')} style={{ width: wp('35%'), height: wp('11%'), backgroundColor: 'white', elevation: 4, borderRadius: wp('2.22223%'), alignItems: 'center', flexDirection: 'row' }}>
+              <Image source={require('../assets/icons/phone-call.png')} style={{ width: wp('5%'), height: wp('5%'), marginLeft: wp('2%'), tintColor: '#00FF66' }} />
+              <Text style={{ marginLeft: wp('2%'), fontSize: wp('3.5%') }}>Phone Number</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.socialLoginContainer}>
             <GoogleButton onPress={this.handleGoogleSignIn}/>
             <View style={styles.socialDistancing}/>
             <FacebookButton onPress={this.handleFacebookSignIn}/>
           </View>
         </View>
-        <Text style={styles.noAccountInfo}>Don’t have an account ? Click here <Text onPress={this.navigateRegister} style={styles.linkText}>Register</Text></Text>
+        <Text style={styles.noAccountInfo}>Don’t have an account ? Click here <Text onPress={() => this.props.navigation.push('SignUp')} style={styles.linkText}>Register</Text></Text>
         <Text style={styles.forgotPassword} onPress={() => this.props.navigation.push('ResetPassword')}>Forgot password ?</Text>
       </View>
     // </KeyboardAvoidingView>

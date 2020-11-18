@@ -25,7 +25,7 @@ export default StyleSheet.create({
     flexDirection   : 'column',
     alignItems      : 'center',
     justifyContent  : 'center',
-    marginTop       : wp('20%'),
+    marginTop       : wp('10%'),
     zIndex          : 1
   },
   logoImageContainer: { width: wp('30%'), aspectRatio: (1/1) },
@@ -41,7 +41,6 @@ export default StyleSheet.create({
     marginTop: wp('3.334')
   },
   inputContainer: {
-    marginTop: wp('5%'),
     zIndex: 1,
     justifyContent: 'center',
     alignItems: 'center',

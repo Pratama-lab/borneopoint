@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import {Picker} from '@react-native-community/picker';
-import { ScrollView , Alert, View, Text, TextInput, TouchableOpacity, Image, ActivityIndicator, StyleSheet, FlatList, Platform} from 'react-native';
+import { ScrollView , Alert, View, Text, TextInput, TouchableOpacity, Image, ActivityIndicator, StyleSheet, FlatList, Platform, BackHandler } from 'react-native';
 import {getPrePaidItem} from '../api'
 import { widthPercentageToDP  as wp} from 'react-native-responsive-screen';
 import formatRupiah from '../functions/formatRupiah';
@@ -82,6 +82,13 @@ class Forex extends Component<any,any>{
         console.log("GET_ALL_OPERATOR => ", e)
     })
   }
+  componentWillMount = () => {
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
+  }
+  handleBackButton = () => {
+    this.props.navigation.pop();
+    return true;
+  }
   componentDidUpdate = () => {
     // try{
     //   console.debug('data', this.state.data[this.state.selectedItemIndex])
@@ -141,12 +148,6 @@ class Forex extends Component<any,any>{
 //     //   return '0'
 //     // }
 //   }
-
-  goTo = (title, params?: any) => {
-    try{
-      this.props.navigation.navigate(title, params)
-    }catch(error){ console.debug(error) }
-  }
 
   selectingPaymentMethod = (paymentName) => {
       try{

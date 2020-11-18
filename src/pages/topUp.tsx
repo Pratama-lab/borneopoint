@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View, Text, Image, TouchableOpacity, TextInput, Alert, ScrollView, ActivityIndicator, StyleSheet } from 'react-native'
+import { View, Text, Image, TouchableOpacity, TextInput, Alert, ScrollView, ActivityIndicator, StyleSheet, BackHandler } from 'react-native'
 import styles from '../styles/topUp'
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen'
 import validateAndConvertNumber from '../functions/validateAndConvertNumber'
@@ -54,6 +54,15 @@ class TopUp extends Component<any,any>{
     })
   }
 
+  componentWillMount = () => {
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
+  }
+
+  handleBackButton = () => {
+    this.props.navigation.pop();
+    return true;
+  }
+
   onChamgeAmount = (text) => {
     this.setState({
       amount: text*1
@@ -88,7 +97,7 @@ class TopUp extends Component<any,any>{
             if(typeof resp.data.status !== 'undefined' && resp.data.status != 200 && typeof resp.data.message !== 'undefined'){
               Alert.alert('',resp.data.message)
             }else{
-              this.props.navigation.navigate('ongoingPayment', {data: resp.data});
+              this.props.navigation.push('ongoingPayment', {data: resp.data});
             }
           }).catch(e => console.log("confirmTOPUP ===> ", e.message))
         })

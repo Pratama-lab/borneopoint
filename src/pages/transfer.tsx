@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View, Text, Image, TouchableOpacity, TextInput, Alert, ActivityIndicator, ToastAndroid } from 'react-native'
+import { View, Text, Image, TouchableOpacity, TextInput, Alert, ActivityIndicator, ToastAndroid, BackHandler } from 'react-native'
 import styles from '../styles/topUp'
 import { widthPercentageToDP } from 'react-native-responsive-screen'
 import capitalizeWords from '../functions/capitalizeWords'
@@ -52,6 +52,15 @@ class TopUp extends Component<any,any>{
       email_valid: false,
       amount_valid: false
     }
+  }
+
+  componentWillMount = () => {
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
+  }
+
+  handleBackButton = () => {
+    this.props.navigation.pop();
+    return true;
   }
 
   onChamgeAmount = (text) => {
