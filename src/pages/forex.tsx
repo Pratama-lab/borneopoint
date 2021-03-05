@@ -24,33 +24,38 @@ const logo = require('../assets/miniLogo.png')
 class Forex extends Component<any,any>{
   constructor(props){
     super(props)
+    this.state = {
+      data: undefined,
+      all_operator: undefined,
+      all_product: undefined,
+      amount: undefined,
+      selectedOperator: -1,
+      selectedProduct: -1,
+      selectedProductIndex: -1,
+      hpValue: undefined,
+      loading: true,
+      productEnabled: false,
+      inputEnabled: false,
+      price: 0,
+      payment_page: true,
+      payment_method: undefined,
+      topup_platform: [],
+      currenPlatform: null,
+      selectedPlatform: [],
+      visible: false,
+      discount: undefined,
+      discount_not_valid: undefined,
+      gettingAccountInfo: false,
+      coupon: undefined,
+      code: undefined
+    }
   }
-  state = {
-    data: undefined,
-    all_operator: undefined,
-    all_product: undefined,
-    amount: undefined,
-    selectedOperator: -1,
-    selectedProduct: -1,
-    selectedProductIndex: -1,
-    hpValue: undefined,
-    loading: true,
-    productEnabled: false,
-    inputEnabled: false,
-    price: 0,
-    payment_page: true,
-    payment_method: undefined,
-    topup_platform: [],
-    currenPlatform: null,
-    selectedPlatform: [],
-    visible: false,
-}
     
     
     
   componentDidMount = async () => {
     const check_login = await AsyncStorage.getItem('@id_login')
-    axios.get('https://borneopoint.co.id/api/get_user', {params: {
+    axios.get('https://admin.borneopoint.co.id/api/get_user', {params: {
       id_login: check_login
     }})
     .then(resp => {
@@ -64,7 +69,7 @@ class Forex extends Component<any,any>{
       console.log('Get User : '+err)
     })
 
-    axios.get('https://borneopoint.co.id/public/api/get_topup_platform')
+    axios.get('https://admin.borneopoint.co.id/api/get_topup_platform')
     .then(resp => {
         //   if(typeof resp.data === 'undefined'){
         //     this.componentDidMount()
@@ -81,13 +86,6 @@ class Forex extends Component<any,any>{
         })
         console.log("GET_ALL_OPERATOR => ", e)
     })
-  }
-  componentWillMount = () => {
-    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
-  }
-  handleBackButton = () => {
-    this.props.navigation.pop();
-    return true;
   }
   componentDidUpdate = () => {
     // try{
@@ -155,6 +153,34 @@ class Forex extends Component<any,any>{
       }catch(error){ console.debug(error) }
 }
 
+check_coupon = async () => {
+  this.setState({ gettingAccountInfo: true })
+
+  const id_login = await AsyncStorage.getItem('@id_login')
+
+  axios.post('https://admin.borneopoint.co.id/api/check_coupon', {code: this.state.coupon, id_login: id_login})
+  .then(resp => {
+    console.log('Check Coupoon => '+JSON.stringify(resp))
+    if (resp.data === '') {
+      this.setState({
+        gettingAccountInfo: false,
+        discount_not_valid: 'Voucher is not valid',
+        discount: undefined,
+        code: undefined
+      })
+    } else {
+      this.setState({
+        gettingAccountInfo: false,
+        discount: resp.data.discount,
+        code: resp.data.code
+      })
+    }
+  })
+  .catch(err => {
+    console.debug('Check Coupon Error => '+err)
+  })
+}
+
 handlePay = async () => {
   const id_login = await AsyncStorage.getItem('@id_login')
   this.setState({loading: true})
@@ -171,10 +197,11 @@ handlePay = async () => {
     topup_rate: this.state.selectedPlatform.rate,
     topup_conversion: this.state.amount,
     payment_channel: this.state.selectedPlatform.platform,
+    coupon: this.state.code
   }
 
   // product_operator, product_nominal, phone_number, user_id, product_id, pulsa_price, price_borneo
-  axios.get('https://borneopoint.co.id/public/api/top_up_request', {params:{data}})
+  axios.get('https://admin.borneopoint.co.id/api/top_up_request', {params:{data}})
   .then(response => {
     this.setState({loading: false})
     if (response.data.status === 'Success'){
@@ -318,23 +345,44 @@ format = (x) => {
             </View>
         </View>
 
+
         {this.state.selectedPlatform.length != 0 ?
           <View>
-              <View>
-                  <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Amount</Text>
-              </View>
-              <View style={{ elevation: 2, backgroundColor: 'white', borderRadius  : wp('2.22223%') }}>
-                  <TextInput
-                    onChangeText={(text) => {
-                      this.setState({
-                        amount: text*1,
-                        price: +text * +this.state.selectedPlatform.rate
-                      })
-                    }}
-                    style={{fontSize: 16, paddingHorizontal: 10}}
-                    keyboardType='phone-pad'
-                  />
-              </View>
+            <View>
+              <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Claim Coupon</Text>
+            </View>
+            <View style={{ borderRadius: wp('2.222223%'), elevation: 2, marginTop: wp('3%'), flexDirection: 'row', aspectRatio: 328/46, overflow: 'hidden', width: wp('90%')}}>
+              <TextInput placeholder={'Enter Coupon Code'} autoCapitalize={'none'} placeholderTextColor={'#ccc'} onChangeText={(text) => this.setState({ coupon: text })} style={{flex:1 , paddingLeft: wp('5%'), fontSize: wp('4%')}}/>
+              <TouchableOpacity style={{ width: wp('20%'), backgroundColor: '#3269B3', justifyContent: 'center', alignItems: 'center'}} onPress={this.check_coupon}>{
+                this.state.gettingAccountInfo ?             
+                  <ActivityIndicator size="large" color="white"/> :             
+                  <Text style={{fontSize: wp('4%'), color: 'white', fontWeight: 'bold'}}>Check</Text>
+              }</TouchableOpacity>
+            </View>
+            {this.state.discount !== undefined ?
+              <Text style={{ fontSize: wp('3%') }}>Discount: Rp {this.format(this.state.discount)}</Text>
+              :
+              (this.state.discount_not_valid !== undefined ?
+                <Text style={{ fontSize: wp('3%'), color: '#FF0000' }}>Voucher is not valid</Text>
+                :
+                null
+              )
+            }
+            <View>
+                <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Amount</Text>
+            </View>
+            <View style={{ elevation: 2, backgroundColor: 'white', borderRadius  : wp('2.22223%') }}>
+                <TextInput
+                  onChangeText={(text) => {
+                    this.setState({
+                      amount: text*1,
+                      price: +text * +this.state.selectedPlatform.rate
+                    })
+                  }}
+                  style={{fontSize: 16, paddingHorizontal: 10}}
+                  keyboardType='phone-pad'
+                />
+            </View>
           </View>
           :
           null
@@ -399,7 +447,11 @@ format = (x) => {
     <View style={{position: 'relative', bottom: 0 , paddingTop: wp('2.5%'), paddingBottom: wp('5%'), width: '100%', backgroundColor: 'white', elevation: 16, flexDirection: 'row'}}>
       <View style={{flexDirection: 'column', flex: 1, marginLeft: wp('5%'), justifyContent: 'center'}}>
         <Text style={{fontWeight: 'bold', fontSize: wp('4%')}}>Total</Text>
-        <Text style={{color: '#1DF318', fontWeight: 'bold', fontSize: wp('4%')}}>Rp {this.format(this.state.price)}</Text>
+        {this.state.code !== undefined ?
+          <Text style={{color: '#1DF318', fontWeight: 'bold', fontSize: wp('4%')}}>Rp {this.format(this.state.price-this.state.discount)}</Text>
+          :
+          <Text style={{color: '#1DF318', fontWeight: 'bold', fontSize: wp('4%')}}>Rp {this.format(this.state.price)}</Text>
+        }
       </View>
       <View style={{
         // justifyContent: 'flex-end'

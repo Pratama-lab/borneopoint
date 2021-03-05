@@ -44,16 +44,22 @@ class Splash extends Component<any,{}>{
         // console.log("phone => ", await AsyncStorage.getItem('@phone'))
         if (await AsyncStorage.getItem('@id_login') !== null) {
           const id_login = await AsyncStorage.getItem('@id_login')
-          axios.get('https://borneopoint.co.id/api/get_user', {params: {
+          axios.get('https://admin.borneopoint.co.id/api/get_user', {params: {
             id_login: id_login
           }})
           .then(resp => {
             if (resp.data.status === 'Inactive') {
-              this.props.navigation.navigate('KtpnPhone')
+              this.props.navigation.reset({
+                routes: [{ name: 'KtpnPhone' }]
+              })
             } else if (resp.data.status === 'Declined') {
-              this.props.navigation.navigate('KtpnPhone')
+              this.props.navigation.reset({
+                routes: [{ name: 'KtpnPhone' }]
+              })
             } else if (resp.data.status === 'Waiting') {
-              this.props.navigation.navigate('Waiting')
+              this.props.navigation.reset({
+                routes: [{ name: 'Waiting' }]
+              })
             } else if (resp.data.status === 'Active') {
               this.props.authState.setup()
               this.props.navigation.reset({
@@ -74,16 +80,22 @@ class Splash extends Component<any,{}>{
     const check_login = await AsyncStorage.getItem('@id_login')
 
     if (check_login !== null){
-      axios.get('https://borneopoint.co.id/api/get_user', {params: {
+      axios.get('https://admin.borneopoint.co.id/api/get_user', {params: {
         id_login: check_login
       }})
       .then(resp => {
         if (resp.data.status === 'Inactive') {
-          this.props.navigation.navigate('KtpnPhone')
+          this.props.navigation.reset({
+            routes: [{ name: 'KtpnPhone' }]
+          })
         } else if (resp.data.status === 'Declined') {
-          this.props.navigation.navigate('KtpnPhone')
+          this.props.navigation.reset({
+            routes: [{ name: 'KtpnPhone' }]
+          })
         } else if (resp.data.status === 'Waiting') {
-          this.props.navigation.navigate('Waiting')
+          this.props.navigation.reset({
+            routes: [{ name: 'Waiting' }]
+          })
         } else if (resp.data.status === 'Active') {
           this.props.authState.setup()
           this.props.navigation.reset({

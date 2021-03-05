@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, Image, TextInput, TouchableOpacity, ToastAndroid, BackHandler } from 'react-native'
+import { View, Text, Image, TextInput, TouchableOpacity, ToastAndroid } from 'react-native'
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen'
 import LinearGradient from 'react-native-linear-gradient'
 import axios from 'axios'
@@ -18,13 +18,9 @@ export default class Phone extends React.Component {
         }
     }
 
-    componentWillMount = () => {
-        BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
-    }
-
     signInWithPhone = async (phoneNumber) => {
         this.setState({ timer: 120 })
-        axios.get('https://borneopoint.co.id/api/check_phone', {params: {
+        axios.get('https://admin.borneopoint.co.id/api/check_phone', {params: {
             phone: this.state.phone_number
         }})
         .then(async (resp) => {
@@ -71,11 +67,6 @@ export default class Phone extends React.Component {
             }
             console.log('Invalid Code => '+error)
         }
-    }
-
-    handleBackButton = () => {
-        this.props.navigation.pop();
-        return true;
     }
 
     render = () =>

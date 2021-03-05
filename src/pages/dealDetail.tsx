@@ -5,7 +5,7 @@ import FastImage from 'react-native-fast-image'
 import AsyncStorage from '@react-native-community/async-storage'
 import axios from 'axios'
 
-const url = 'https://borneopoint.co.id/public/asset/images/'
+const url = 'https://admin.borneopoint.co.id/asset/images/'
 
 class DealDetail extends Component<any>{
   constructor(props){
@@ -17,7 +17,7 @@ class DealDetail extends Component<any>{
   }
 
   componentDidMount = () => {
-    axios.get('https://borneopoint.co.id/public/api/get_deals_detail', {params: {
+    axios.get('https://admin.borneopoint.co.id/api/get_deals_detail', {params: {
       deals_id: this.props.route.params.deals_id
     }})
     .then(resp => {
@@ -29,15 +29,6 @@ class DealDetail extends Component<any>{
         deskripsi: resp.data[0].deals_description
       })
     })
-  }
-
-  componentWillMount = () => {
-    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
-  }
-
-  handleBackButton = () => {
-    this.props.navigation.pop();
-    return true;
   }
 
   refresh = () => {

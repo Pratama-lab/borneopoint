@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert, TextInput, ToastAndroid, BackHandler } from 'react-native'
+import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert, TextInput, ToastAndroid } from 'react-native'
 
 import { SplashRoutingProps } from '../types/index'
 import styles from '../styles/signIn'
@@ -40,10 +40,6 @@ class SignUp extends Component<any,{}>{
     })
   }
 
-  componentWillMount = () => {
-    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
-  }
-
   getValueName = (text: string) => {
     this.name = text
   }
@@ -67,7 +63,7 @@ class SignUp extends Component<any,{}>{
         photo: userInfo.user.photo
       })
       console.log(userInfo)
-      axios.get('https://borneopoint.co.id/public/api/insert_user', {params:{
+      axios.get('https://admin.borneopoint.co.id/api/insert_user', {params:{
           nama: this.state.name,
           email: this.state.email,
           id_login: this.state.id_email,
@@ -78,7 +74,7 @@ class SignUp extends Component<any,{}>{
 
         const check_login = await AsyncStorage.getItem('@id_login')
 
-        axios.get('https://borneopoint.co.id/api/get_user', {params: {
+        axios.get('https://admin.borneopoint.co.id/api/get_user', {params: {
           id_login: check_login
         }})
         .then(resp => {
@@ -139,7 +135,7 @@ class SignUp extends Component<any,{}>{
           // alert(JSON.stringify(user));
           // console.log('result:', user);
 
-          axios.get('https://borneopoint.co.id/public/api/insert_user', {params:{
+          axios.get('https://admin.borneopoint.co.id/api/insert_user', {params:{
             nama: this.state.userInfo.name,
             email: this.state.userInfo.email,
             id_login: this.state.userInfo.id,
@@ -149,7 +145,7 @@ class SignUp extends Component<any,{}>{
 
             const check_login = await AsyncStorage.getItem('@id_login')
 
-            axios.get('https://borneopoint.co.id/api/get_user', {params: {
+            axios.get('https://admin.borneopoint.co.id/api/get_user', {params: {
               id_login: check_login
             }})
             .then(resp => {
@@ -235,7 +231,7 @@ class SignUp extends Component<any,{}>{
   // }
 
   signUp = () => {
-    axios.get('https://borneopoint.co.id/public/api/insert_user', {params:{
+    axios.get('https://admin.borneopoint.co.id/api/insert_user', {params:{
       nama: this.name,
       email: this.state.email_native,
       password: this.password,
@@ -266,11 +262,6 @@ class SignUp extends Component<any,{}>{
       this.setState({ email_native: text, email_valid: 'Email is Correct' })
       console.log("Email is Correct");
     }
-  }
-
-  handleBackButton = () => {
-    this.props.navigation.pop();
-    return true;
   }
 
   render = () => 

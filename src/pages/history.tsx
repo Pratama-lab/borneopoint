@@ -35,8 +35,6 @@ class History extends Component<any>{
     //   console.debug(error)
     // }
 
-    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton.bind(this));
-
     const check_login = await AsyncStorage.getItem('@id_login');
 
     if (check_login !== undefined){
@@ -47,7 +45,7 @@ class History extends Component<any>{
       // alert('berhasil')
     }
 
-    axios.get('https://borneopoint.co.id/public/api/get_user', {params: {
+    axios.get('https://admin.borneopoint.co.id/api/get_user', {params: {
       id_login: check_login
     }})
     .then(resp => {
@@ -61,7 +59,7 @@ class History extends Component<any>{
       }
     })
 
-    axios.get('https://borneopoint.co.id/public/api/history', {params: {
+    axios.get('https://admin.borneopoint.co.id/api/history', {params: {
       id_login: check_login
     }})
     .then(res => {
@@ -85,18 +83,6 @@ class History extends Component<any>{
       return parts.join(".");
     }else{
       return x;
-    }
-  }
-
-  handleBackButton = () => {
-    if (backPressed > 0) {
-      BackHandler.exitApp();
-      backPressed = 0;
-    } else {
-      backPressed++;
-      ToastAndroid.show("Press Again To Exit", ToastAndroid.SHORT);
-      setTimeout(() => { backPressed = 0 }, 2000);
-      return true;
     }
   }
 

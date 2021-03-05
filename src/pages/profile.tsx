@@ -77,8 +77,6 @@ class Profile extends Component<IProfileProps>{
     //   )
     // }
 
-    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton.bind(this));
-
     const check_login = await AsyncStorage.getItem('@id_login')
 
     if (check_login !== undefined){
@@ -89,7 +87,7 @@ class Profile extends Component<IProfileProps>{
       // alert('berhasil')
     }
 
-    axios.get('https://borneopoint.co.id/public/api/get_user', {params: {
+    axios.get('https://admin.borneopoint.co.id/api/get_user', {params: {
       id_login: check_login
     }})
     .then(resp => {
@@ -175,7 +173,7 @@ class Profile extends Component<IProfileProps>{
     formData.append("phone", this.state.inputPhone);
 
     try {
-      let response = await fetch('https://borneopoint.co.id/public/api/update_user_profile', {
+      let response = await fetch('https://admin.borneopoint.co.id/api/update_user_profile', {
         method: 'post',
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -247,17 +245,6 @@ class Profile extends Component<IProfileProps>{
       console.log("Email is Correct");
     }
   }
-  handleBackButton = () => {
-    if (backPressed > 0) {
-      BackHandler.exitApp();
-      backPressed = 0;
-    } else {
-      backPressed++;
-      ToastAndroid.show("Press Again To Exit", ToastAndroid.SHORT);
-      setTimeout(() => { backPressed = 0 }, 2000);
-      return true;
-    }
-  }
   render = () => 
     <>
       {this.state.loading ?
@@ -293,7 +280,7 @@ class Profile extends Component<IProfileProps>{
             /> */}
             <View style={{width: wp('35.55556%'), aspectRatio: 1/1, backgroundColor: '#ccc', borderRadius: 120, justifyContent: 'center', alignItems: 'center', position: 'relative'}}>
               <FastImage
-                source={this.state.pictureCacheUri ? { uri: this.state.pictureCacheUri } : this.state.profile ? { uri: 'https://borneopoint.co.id/public/storage/profile/'+this.state.profile } : person}
+                source={this.state.pictureCacheUri ? { uri: this.state.pictureCacheUri } : this.state.profile ? { uri: 'https://admin.borneopoint.co.id/storage/profile/'+this.state.profile } : person}
                 style={{
                   width       : '100%',
                   aspectRatio : 1/1,
@@ -401,7 +388,7 @@ class Profile extends Component<IProfileProps>{
             </View>
             <View style={styles.infoContainer}>
               <Text style={styles.infoLabel}>App Version</Text>
-              <Text style={styles.infoText}>V 1.0.1</Text>
+              <Text style={styles.infoText}>V 1.1</Text>
             </View>
             <TouchableOpacity style={styles.infoContainer} onPress={() => this.goTo('TermsAndCondition')}>
               <Text style={styles.resetPassText}>Terms & Condition</Text>

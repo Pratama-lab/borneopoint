@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View, Text, Image, TouchableOpacity, TextInput, Alert, ScrollView, ActivityIndicator, StyleSheet, BackHandler } from 'react-native'
+import { View, Text, Image, TouchableOpacity, TextInput, Alert, ScrollView, ActivityIndicator, StyleSheet } from 'react-native'
 import styles from '../styles/topUp'
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen'
 import validateAndConvertNumber from '../functions/validateAndConvertNumber'
@@ -44,23 +44,27 @@ class TopUp extends Component<any,any>{
     this.state = {
       amount: undefined,
       payment_method: undefined,
-      loading: true
+      loading: true,
+      fee: [0],
+      free_fee: '',
+      coupon: undefined,
+      discount: undefined,
+      code: undefined,
+      gettingAccountInfo: false,
+      discount_not_valid: undefined,
     }
   }
 
   componentDidMount = async () => {
-    this.setState({
-      loading: false
+    axios.get('https://admin.borneopoint.co.id/api/topup_method')
+    .then(resp => {
+      console.log(resp.data)
+      this.setState({
+        loading: false,
+        fee: resp.data,
+        free_fee: resp.data,
+      })
     })
-  }
-
-  componentWillMount = () => {
-    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
-  }
-
-  handleBackButton = () => {
-    this.props.navigation.pop();
-    return true;
   }
 
   onChamgeAmount = (text) => {
@@ -75,21 +79,68 @@ class TopUp extends Component<any,any>{
     }else{
       return [styles.bankItem,styles.bankItemMargin];
     }
-  } 
+  }
+
+  format = (x) => {
+    if(/^\d+$/.test(x.toString().trim()) === true){
+      var parts = x.toString().split(".");
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      return parts.join(".");
+    }else{
+      return x;
+    }
+  }
+
+  check_coupon = async () => {
+    this.setState({ gettingAccountInfo: true })
+
+    const id_login = await AsyncStorage.getItem('@id_login')
+
+    axios.post('https://admin.borneopoint.co.id/api/check_coupon', {code: this.state.coupon, id_login: id_login})
+    .then(resp => {
+      console.log('Check Coupoon => '+JSON.stringify(resp))
+      if (resp.data === '') {
+        this.setState({
+          gettingAccountInfo: false,
+          discount_not_valid: 'Voucher is not valid',
+          discount: undefined,
+          code: undefined
+        })
+      } else {
+        this.setState({
+          gettingAccountInfo: false,
+          discount: resp.data.discount,
+          code: resp.data.code
+        })
+      }
+    })
+    .catch(err => {
+      console.debug('Check Coupon Error => '+err)
+    })
+  }
 
   confirmTopUp = async () => {
     if (this.state.amount !== '' && this.state.amount !== undefined){
       if(this.state.payment_method !== undefined){
         this.setState({loading: true})
         const check_login = await AsyncStorage.getItem('@id_login');
-        axios.get('https://borneopoint.co.id/api/get_user', {params: {
+        axios.get('https://admin.borneopoint.co.id/api/get_user', {params: {
           id_login: check_login
         }})
         .then(resp => {
-          axios.post('https://borneopoint.co.id/api/borneo_topup', {
+          console.log( {
             id_login: resp.data.id_login,
             payment_method: this.state.payment_method,
-            amount: this.state.amount
+            amount: this.state.amount,
+            deposit_fee: this.state.final_fee,
+            coupon: this.state.code
+          })
+          axios.post('https://admin.borneopoint.co.id/api/borneo_topup', {
+            id_login: resp.data.id_login,
+            payment_method: this.state.payment_method,
+            amount: this.state.amount,
+            deposit_fee: this.state.final_fee,
+            coupon: this.state.code
           })
           .then(resp => {
             console.log(resp.data)
@@ -99,7 +150,13 @@ class TopUp extends Component<any,any>{
             }else{
               this.props.navigation.push('ongoingPayment', {data: resp.data});
             }
-          }).catch(e => console.log("confirmTOPUP ===> ", e.message))
+          }).catch(error => {
+            if (error.response) {
+              console.log(error.response.data);
+              console.log(error.response.status);
+              console.log(error.response.headers);
+            }
+          })
         })
         .catch(err => {
           console.log('Get User : '+err)
@@ -188,40 +245,178 @@ class TopUp extends Component<any,any>{
           <View style={{ borderRadius: wp('2.222223%'), elevation: 2, marginTop: wp('3%'), backgroundColor: '#FFF' }}>
             <TextInput  placeholder={'Enter TopUp amount'}  placeholderTextColor={'#ccc'} keyboardType={'numeric'} onChangeText={this.onChamgeAmount} onEndEditing={() => {}} style={{ paddingLeft: wp('5%'), fontSize: wp('4%')}}/>
           </View>
+          {this.state.payment_method === 'bca' && this.state.amount !== undefined && this.state.amount !== 0 ?
+            <>
+              {this.state.amount < this.state.fee[0].free_fee ?
+                <Text style={{ fontSize: wp('3%') }}>Fee Transaksi: Rp {this.state.fee[0].fee}</Text>
+                :
+                <Text style={{ fontSize: wp('3%') }}>Fee Transaksi: Rp 0</Text>
+              }
+            </>
+            : null
+          }
+          {this.state.payment_method === 'indomaret' && this.state.amount !== undefined && this.state.amount !== 0 ?
+            <>
+              {this.state.amount < this.state.fee[1].free_fee ?
+                <Text style={{ fontSize: wp('3%') }}>Fee Transaksi: Rp {this.state.fee[1].fee}</Text>
+                :
+                <Text style={{ fontSize: wp('3%') }}>Fee Transaksi: Rp 0</Text>
+              }
+            </>
+            : null
+          }
+          {this.state.payment_method === 'alfamart' && this.state.amount !== undefined && this.state.amount !== 0 ?
+            <>
+              {this.state.amount < this.state.fee[2].free_fee ?
+                <Text style={{ fontSize: wp('3%') }}>Fee Transaksi: Rp {this.state.fee[2].fee}</Text>
+                :
+                <Text style={{ fontSize: wp('3%') }}>Fee Transaksi: Rp 0</Text>
+              }
+            </>
+            : null
+          }
+          {this.state.payment_method === 'cimb' && this.state.amount !== undefined && this.state.amount !== 0 ?
+            <>
+              {this.state.amount < this.state.fee[3].free_fee ?
+                <Text style={{ fontSize: wp('3%') }}>Fee Transaksi: Rp {this.state.fee[3].fee}</Text>
+                :
+                <Text style={{ fontSize: wp('3%') }}>Fee Transaksi: Rp 0</Text>
+              }
+            </>
+            : null
+          }
+          {this.state.payment_method === 'bni' && this.state.amount !== undefined && this.state.amount !== 0 ?
+            <>
+              {this.state.amount < this.state.fee[4].free_fee ?
+                <Text style={{ fontSize: wp('3%') }}>Fee Transaksi: Rp {this.state.fee[4].fee}</Text>
+                :
+                <Text style={{ fontSize: wp('3%') }}>Fee Transaksi: Rp 0</Text>
+              }
+            </>
+            : null
+          }
+          {this.state.payment_method === 'bag' && this.state.amount !== undefined && this.state.amount !== 0 ?
+            <>
+              {this.state.amount < this.state.fee[5].free_fee ?
+                <Text style={{ fontSize: wp('3%') }}>Fee Transaksi: Rp {this.state.fee[5].fee}</Text>
+                :
+                <Text style={{ fontSize: wp('3%') }}>Fee Transaksi: Rp 0</Text>
+              }
+            </>
+            : null
+          }
+          {this.state.payment_method === 'mandiri' && this.state.amount !== undefined && this.state.amount !== 0 ?
+            <>
+              {this.state.amount < this.state.fee[6].free_fee ?
+                <Text style={{ fontSize: wp('3%') }}>Fee Transaksi: Rp {this.state.fee[6].fee}</Text>
+                :
+                <Text style={{ fontSize: wp('3%') }}>Fee Transaksi: Rp 0</Text>
+              }
+            </>
+            : null
+          }
+
+          <Text style={[styles.optionTitle, { marginTop: wp('5%') }]}>Claim Coupon</Text>
+          <View style={{ borderRadius: wp('2.222223%'), elevation: 2, marginTop: wp('3%'), flexDirection: 'row', aspectRatio: 328/46, overflow: 'hidden', width: wp('90%')}}>
+            <TextInput placeholder={'Enter Coupon Code'} autoCapitalize={'none'} placeholderTextColor={'#ccc'} onChangeText={(text) => this.setState({ coupon: text })} style={{flex:1 , paddingLeft: wp('5%'), fontSize: wp('4%')}}/>
+            <TouchableOpacity style={{ width: wp('20%'), backgroundColor: '#3269B3', justifyContent: 'center', alignItems: 'center'}} onPress={this.check_coupon}>{
+              this.state.gettingAccountInfo ?             
+                <ActivityIndicator size="large" color="white"/> :             
+                <Text style={{fontSize: wp('4%'), color: 'white', fontWeight: 'bold'}}>Check</Text>
+            }</TouchableOpacity>
+          </View>
+          {this.state.discount !== undefined ?
+            <Text style={{ fontSize: wp('3%') }}>Discount: Rp {this.format(this.state.discount)}</Text>
+            :
+            (this.state.discount_not_valid === 'Voucher is not valid' ?
+              <Text style={{ fontSize: wp('3%'), color: '#FF0000' }}>Voucher is not valid</Text>
+              :
+              null
+            )
+          }
         </View>
         <View style={styles.optionSectionContainer}>
           <Text style={styles.optionTitle}>Bank Transfer</Text>
-          <TouchableOpacity style={this.switchSelected('bca')} onPress={() => this.setState({payment_method: 'bca'})}>
+          <TouchableOpacity style={this.switchSelected('bca')} onPress={() => {
+              this.setState({payment_method: 'bca' })
+              if (+this.state.amount < this.state.fee[0].free_fee) {
+                this.setState({ final_fee: this.state.fee[0].fee })
+              } else {
+                this.setState({ final_fee: 0 })
+              }
+            }}>
             <Image source={imageLogoSwitch('bca')} style={[ styles.bankLogo, { width: wp('12%'), height: wp('5%') }]} />
             <Text style={styles.bankText}>BCA</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.optionSectionContainer}>
           <Text style={styles.optionTitle}>Virtual Account</Text>
-          <TouchableOpacity style={this.switchSelected('cimb')} onPress={() => this.setState({payment_method: 'cimb'})}>
+          <TouchableOpacity style={this.switchSelected('cimb')} onPress={() => {
+              this.setState({payment_method: 'cimb'})
+              if (+this.state.amount < this.state.fee[3].free_fee) {
+                this.setState({ final_fee: this.state.fee[3].fee })
+              } else {
+                this.setState({ final_fee: 0 })
+              }
+            }}>
             <Image source={imageLogoSwitch('cimb')} style={[ styles.bankLogo, { width: wp('12%'), height: wp('5%') }]} />
             <Text style={styles.bankText}>CIMB</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={this.switchSelected('mandiri')} onPress={() => this.setState({payment_method: 'mandiri'})}>
+          <TouchableOpacity style={this.switchSelected('mandiri')} onPress={() => {
+              this.setState({payment_method: 'mandiri'})
+              if (+this.state.amount < this.state.fee[6].free_fee) {
+                this.setState({ final_fee: this.state.fee[6].fee })
+              } else {
+                this.setState({ final_fee: 0 })
+              }
+            }}>
             <Image source={imageLogoSwitch('mandiri')} style={[ styles.bankLogo, { width: wp('12%'), height: wp('5%') }]} />
             <Text style={styles.bankText}>Mandiri</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={this.switchSelected('bni')} onPress={() => this.setState({payment_method: 'bni'})}>
+          <TouchableOpacity style={this.switchSelected('bni')} onPress={() => {
+              this.setState({payment_method: 'bni'})
+              if (+this.state.amount < this.state.fee[4].free_fee) {
+                this.setState({ final_fee: this.state.fee[4].fee })
+              } else {
+                this.setState({ final_fee: 0 })
+              }
+            }}>
             <Image source={imageLogoSwitch('bni')} style={[ styles.bankLogo, { width: wp('12%'), height: wp('4%') }]} />
             <Text style={styles.bankText}>BNI</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={this.switchSelected('bag')} onPress={() => this.setState({payment_method: 'bag'})}>
+          <TouchableOpacity style={this.switchSelected('bag')} onPress={() => {
+              this.setState({payment_method: 'bag'})
+              if (+this.state.amount < this.state.fee[5].free_fee) {
+                this.setState({ final_fee: this.state.fee[5].fee })
+              } else {
+                this.setState({ final_fee: 0 })
+              }
+            }}>
             <Image source={imageLogoSwitch('bag')} style={[ styles.bankLogo, { width: wp('12%'), height: wp('5%') }]} />
             <Text style={styles.bankText}>BAG</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.optionSectionContainer}>
           <Text style={styles.optionTitle}>Physical Merchant</Text>
-          <TouchableOpacity style={this.switchSelected('indomaret')} onPress={() => this.setState({payment_method: 'indomaret'})}>
+          <TouchableOpacity style={this.switchSelected('indomaret')} onPress={() => {
+              this.setState({payment_method: 'indomaret'})
+              if (+this.state.amount < this.state.fee[1].free_fee) {
+                this.setState({ final_fee: this.state.fee[1].fee })
+              } else {
+                this.setState({ final_fee: 0 })
+              }
+            }}>
             <Image source={imageLogoSwitch('indomart')} style={[ styles.bankLogo, { width: wp('12%'), height: wp('4.5%') }]} />
             <Text style={styles.bankText}>Indomaret</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={this.switchSelected('alfamart')} onPress={() => this.setState({payment_method: 'alfamart'})}>
+          <TouchableOpacity style={this.switchSelected('alfamart')} onPress={() => {
+              this.setState({payment_method: 'alfamart'})
+              if (+this.state.amount < this.state.fee[2].free_fee) {
+                this.setState({ final_fee: this.state.fee[2].fee })
+              } else {
+                this.setState({ final_fee: 0 })
+              }
+            }}>
             <Image source={imageLogoSwitch('alfamart')} style={[ styles.bankLogo, { width: wp('12%'), height: wp('4.5%') }]} />
             <Text style={styles.bankText}>Alfamart</Text>
           </TouchableOpacity>

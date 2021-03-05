@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
-import { View, Dimensions, Text, Image, TouchableOpacity, TextInput, Alert, ScrollView, BackHandler } from 'react-native'
+import { View, Dimensions, Text, Image, TouchableOpacity, TextInput, Alert, ScrollView, ToastAndroid } from 'react-native'
 import {AuthContext} from '../context'
 import styles from '../styles/ongoingPayment'
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import axios from 'axios'
+import Clipboard from '@react-native-community/clipboard'
 
 const bcaLogo = require('../assets/icons/bca.png')
 
@@ -37,15 +38,6 @@ class OngoingPayment extends Component<any,any>{
     })
   }
 
-  componentWillMount = () => {
-    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
-  }
-
-  handleBackButton = () => {
-    this.props.navigation.pop();
-    return true;
-  }
-
   adjustDesign = (height) => {
     var screenSize = Dimensions.get('window').height - 64;
     if (+height > +screenSize){
@@ -69,7 +61,21 @@ class OngoingPayment extends Component<any,any>{
   renderVA = () => (
     <>
     <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'left', fontSize: wp('4.5%') }}>VA. Number ({this.props.route.params.data.payment_channel.toUpperCase()})</Text>
-    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('7%'), color: '#3269B3' }}>{this.state.va}</Text>
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('7%'), color: '#3269B3' }}>{this.state.va}</Text>
+      <TouchableOpacity
+        style={{ marginLeft: wp('2%') }}
+        onPress={() => {
+          const showToast = () => {
+            ToastAndroid.show("Copied", ToastAndroid.SHORT);
+          }
+          Clipboard.setString(this.state.va)
+          showToast()
+        }}
+      >
+        <Image source={require('../assets/icons/copy.png')} style={{ width: wp('5%'), height: wp('5%') }} />
+      </TouchableOpacity>
+    </View>
 
     <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'left', marginTop: wp('10%'), fontSize: wp('4.5%') }}>Amount</Text>
     <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('7%'), color: '#3269B3' }}>Rp {this.format(this.state.amount)}</Text>
@@ -88,7 +94,21 @@ class OngoingPayment extends Component<any,any>{
   renderTF = () => (
     <>
     <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'left', fontSize: wp('4.5%') }}>Account Number ({this.props.route.params.data.payment_channel.toUpperCase()})</Text>
-    <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('7%'), color: '#3269B3' }}>{this.state.va}</Text>
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('7%'), color: '#3269B3' }}>{this.state.va}</Text>
+      <TouchableOpacity
+        style={{ marginLeft: wp('2%') }}
+        onPress={() => {
+          const showToast = () => {
+            ToastAndroid.show("Copied", ToastAndroid.SHORT);
+          }
+          Clipboard.setString(this.state.va)
+          showToast()
+        }}
+      >
+        <Image source={require('../assets/icons/copy.png')} style={{ width: wp('5%'), height: wp('5%') }} />
+      </TouchableOpacity>
+    </View>
 
     <Text style={{ fontFamily: 'Ubuntu-Bold', textAlign: 'left', marginTop: wp('10%'), fontSize: wp('4.5%') }}>Amount</Text>
     <Text style={{ fontFamily: 'Ubuntu-Light', textAlign: 'left', fontSize: wp('7%'), color: '#3269B3' }}>Rp {this.format(this.state.amount)}</Text>

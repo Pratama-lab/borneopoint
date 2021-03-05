@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert, TextInput, ToastAndroid, BackHandler } from 'react-native'
+import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert, TextInput, ToastAndroid } from 'react-native'
 
 import styles from '../styles/signIn'
 import { widthPercentageToDP as wp} from 'react-native-responsive-screen'
@@ -43,9 +43,6 @@ class SignIn extends Component<any,{}>{
     })
 
   }
-  componentWillMount = () => {
-    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
-  }
   getValueEmail = (text: string) => {
     this.email = text
   }
@@ -64,7 +61,7 @@ class SignIn extends Component<any,{}>{
         photo: userInfo.user.photo
       })
       console.log(userInfo)
-      axios.get('https://borneopoint.co.id/public/api/insert_user', {params:{
+      axios.get('https://admin.borneopoint.co.id/api/insert_user', {params:{
           nama: this.state.name,
           email: this.state.email,
           id_login: this.state.id_email,
@@ -74,7 +71,7 @@ class SignIn extends Component<any,{}>{
         AsyncStorage.setItem('@id_login', this.state.id_email)
         
         const check_login = await AsyncStorage.getItem('@id_login')
-        axios.get('https://borneopoint.co.id/api/get_user', {params: {
+        axios.get('https://admin.borneopoint.co.id/api/get_user', {params: {
           id_login: check_login
         }})
         .then(resp => {
@@ -98,7 +95,7 @@ class SignIn extends Component<any,{}>{
         })
       })
       .catch(err => {
-        // console.log('Insert user: '+err)
+        console.log('Insert user: '+err)
         ToastAndroid.show('This account already exists', ToastAndroid.SHORT)
       })
     }
@@ -134,7 +131,7 @@ class SignIn extends Component<any,{}>{
           // alert(JSON.stringify(user));
           // console.log('result:', user);
 
-          axios.get('https://borneopoint.co.id/public/api/insert_user', {params:{
+          axios.get('https://admin.borneopoint.co.id/api/insert_user', {params:{
             nama: this.state.userInfo.name,
             email: this.state.userInfo.email,
             id_login: this.state.userInfo.id,
@@ -144,7 +141,7 @@ class SignIn extends Component<any,{}>{
 
             const check_login = await AsyncStorage.getItem('@id_login')
             
-            axios.get('https://borneopoint.co.id/api/get_user', {params: {
+            axios.get('https://admin.borneopoint.co.id/api/get_user', {params: {
               id_login: check_login
             }})
             .then(resp => {
@@ -217,7 +214,7 @@ class SignIn extends Component<any,{}>{
   //   }
   // }
   signIn = () => {
-    axios.post('https://borneopoint.co.id/api/login', {email: this.state.email_native, password: this.password})
+    axios.post('https://admin.borneopoint.co.id/api/login', {email: this.state.email_native, password: this.password})
     .then(resp => {
       // alert(JSON.stringify(resp.data))
       if (resp.data.data.message === 'These credentials do not match our records.') {
@@ -261,11 +258,6 @@ class SignIn extends Component<any,{}>{
       this.setState({ email_native: text, email_valid: 'Email is Correct' })
       console.log("Email is Correct");
     }
-  }
-
-  handleBackButton = () => {
-    this.props.navigation.pop();
-    return true;
   }
 
   render = () => 

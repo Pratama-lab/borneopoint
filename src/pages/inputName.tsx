@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, Image, TextInput, TouchableOpacity, BackHandler } from 'react-native'
+import { View, Text, Image, TextInput, TouchableOpacity } from 'react-native'
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen'
 import LinearGradient from 'react-native-linear-gradient'
 import AsyncStorage from '@react-native-community/async-storage'
@@ -24,12 +24,8 @@ export default class InputName extends React.Component {
         })
     }
 
-    componentWillMount = () => {
-        BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
-    }
-
     signUp = () => {
-        axios.get('https://borneopoint.co.id/public/api/insert_user', {params: {
+        axios.get('https://admin.borneopoint.co.id/api/insert_user', {params: {
             nama: this.state.name,
             email: this.state.email,
             password: this.state.password,
@@ -38,7 +34,6 @@ export default class InputName extends React.Component {
         .then((resp) => {
             console.log(resp.data.id_login)
             AsyncStorage.setItem('@id_login', resp.data.id_login)
-            // this.props.navigation.pop('KtpnPhone')
             this.props.navigation.reset({
                 routes: [{ name: 'KtpnPhone' }]
             })
@@ -46,11 +41,6 @@ export default class InputName extends React.Component {
         .catch(err => {
             console.log("INSERT USER BY EMAIL => "+err)
         })
-    }
-
-    handleBackButton = () => {
-        this.props.navigation.pop();
-        return true;
     }
 
     render = () =>

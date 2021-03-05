@@ -24,7 +24,7 @@ const money = require('../assets/icons/money.png')
 const bpjs = require('../assets/icons/bpjs.png')
 const vouchers = require('../assets/icons/vouchers.png')
 const others = require('../assets/icons/others.png')
-const url = 'https://borneopoint.co.id/public/storage/media_images/'
+const url = 'https://admin.borneopoint.co.id/public/storage/media_images/'
 
 let backPressed = 0;
 
@@ -70,8 +70,6 @@ class Home extends Component<any,any>{
     //     { cancelable: false }
     //   )
     // }
-    
-    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton.bind(this))
 
     const check_login = await AsyncStorage.getItem('@id_login');
 
@@ -84,7 +82,7 @@ class Home extends Component<any,any>{
       // alert('berhasil')
     }
 
-    axios.get('https://borneopoint.co.id/api/get_user', {params: {
+    axios.get('https://admin.borneopoint.co.id/api/get_user', {params: {
       id_login: check_login
     }})
     .then(resp => {
@@ -101,7 +99,7 @@ class Home extends Component<any,any>{
       console.log('Get User : '+err)
     })
 
-    axios.get('https://borneopoint.co.id/public/api/get_media')
+    axios.get('https://admin.borneopoint.co.id/api/get_media')
     .then(res => {
       // alert(JSON.stringify(this.state.deskripsi))
       this.setState({
@@ -119,18 +117,6 @@ class Home extends Component<any,any>{
 
   infoAndPromotion = (name,description):any => {
     this.props.navigation.navigate('InfoAndPromotion',{ name, description})
-  }
-
-  handleBackButton = () => {
-    if (backPressed > 0) {
-      BackHandler.exitApp();
-      backPressed = 0;
-    } else {
-      backPressed++;
-      ToastAndroid.show("Press Again To Exit", ToastAndroid.SHORT);
-      setTimeout(() => { backPressed = 0 }, 2000);
-      return true;
-    }
   }
   
   render = () =>
@@ -164,7 +150,7 @@ class Home extends Component<any,any>{
                   :
                   <Image
                     source={{
-                      uri: 'https://borneopoint.co.id/public/storage/profile/'+this.state.profile
+                      uri: 'https://admin.borneopoint.co.id/public/storage/profile/'+this.state.profile
                     }}
                     style={{
                       width       : '100%',

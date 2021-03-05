@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, ImageBackground, TextInput, TouchableOpacity, Image, StyleSheet, ActivityIndicator, BackHandler } from 'react-native'
+import { View, Text, ImageBackground, TextInput, TouchableOpacity, Image, StyleSheet, ActivityIndicator } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen'
 import AsyncStorage from '@react-native-community/async-storage'
@@ -10,14 +10,9 @@ import FastImage from 'react-native-fast-image'
 
 
 export default class ktpnphone extends React.Component {
-    _didFocusSubscription;
-    _willBlurSubscription;
 
     constructor(props) {
         super(props);
-        this._didFocusSubscription = props.navigation.addListener('didFocus', payload =>
-            BackHandler.addEventListener('hardwareBackPress', this.handleBackPress)
-        );
         this.state = {
             phone_number: undefined,
             ktp: undefined,
@@ -33,11 +28,8 @@ export default class ktpnphone extends React.Component {
     }
 
     componentDidMount = async () => {
-        this._willBlurSubscription = this.props.navigation.addListener('willBlur', payload =>
-            BackHandler.removeEventListener('hardwareBackPress', this.handleBackPress)
-        );
         const id_login = await AsyncStorage.getItem('@id_login')
-        axios.get('https://borneopoint.co.id/api/get_user', {params: {
+        axios.get('https://admin.borneopoint.co.id/api/get_user', {params: {
             id_login: id_login
         }})
         .then(resp => {
@@ -76,7 +68,7 @@ export default class ktpnphone extends React.Component {
         const id_login = await AsyncStorage.getItem('@id_login')
         this.setState({ loading: true })
 
-        fetch('https://borneopoint.co.id/public/api/update_user_profile', {
+        fetch('https://admin.borneopoint.co.id/api/update_user_profile', {
 	      method: 'POST',
 	      headers: {
 	        'Content-Type': 'multipart/form-data'
@@ -188,13 +180,6 @@ export default class ktpnphone extends React.Component {
                 </View>
             </>
 	    }
-    }
-
-    handleBackPress = () => {
-        if (this.props.navigation.isFocused()) {
-            BackHandler.exitApp()
-        }
-        return true;
     }
 
     render = () =>

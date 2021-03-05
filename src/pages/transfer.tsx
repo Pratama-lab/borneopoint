@@ -54,15 +54,6 @@ class TopUp extends Component<any,any>{
     }
   }
 
-  componentWillMount = () => {
-    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
-  }
-
-  handleBackButton = () => {
-    this.props.navigation.pop();
-    return true;
-  }
-
   onChamgeAmount = (text) => {
     this.setState({ amount: text*1 })
     if (text > 999){
@@ -110,7 +101,7 @@ class TopUp extends Component<any,any>{
 
     this.setState({ gettingAccountInfo: true })
       
-    axios.get('https://borneopoint.co.id/public/api/check_email', {params: {
+    axios.get('https://borneopoint.co.id/api/check_email', {params: {
       email: this.state.email
     }})
     .then(resp => {

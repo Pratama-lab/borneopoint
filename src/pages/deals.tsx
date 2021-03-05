@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-community/async-storage'
 import axios from 'axios'
 import FastImage from 'react-native-fast-image'
 
-const url = 'https://borneopoint.co.id/public/asset/images/'
+const url = 'https://admin.borneopoint.co.id/asset/images/'
 
 let backPressed = 0;
 
@@ -35,9 +35,7 @@ class Deals extends Component{
     //   console.debug(error)
     // }
 
-    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton.bind(this));
-
-    axios.get('https://borneopoint.co.id/public/api/get_all_deals')
+    axios.get('https://admin.borneopoint.co.id/api/get_all_deals')
     .then(resp => {
       this.setState({
         loading: false,
@@ -52,18 +50,6 @@ class Deals extends Component{
       this.componentDidMount()
     }catch(error){
       console.log(error)
-    }
-  }
-
-  handleBackButton = () => {
-    if (backPressed > 0) {
-      BackHandler.exitApp();
-      backPressed = 0;
-    } else {
-      backPressed++;
-      ToastAndroid.show("Press Again To Exit", ToastAndroid.SHORT);
-      setTimeout(() => { backPressed = 0 }, 2000);
-      return true;
     }
   }
   
