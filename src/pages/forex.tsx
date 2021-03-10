@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import {Picker} from '@react-native-community/picker';
-import { ScrollView , Alert, View, Text, TextInput, TouchableOpacity, Image, ActivityIndicator, StyleSheet, FlatList, Platform, BackHandler } from 'react-native';
+import { ScrollView , Alert, View, Text, TextInput, TouchableOpacity, Image, ActivityIndicator, StyleSheet, FlatList, Platform, BackHandler, ToastAndroid } from 'react-native';
 import {getPrePaidItem} from '../api'
 import { widthPercentageToDP  as wp} from 'react-native-responsive-screen';
 import formatRupiah from '../functions/formatRupiah';
@@ -12,7 +12,9 @@ import { AuthContext } from '../context'
 
 import { getAccountInfo, purchasePrePaid } from '../api'
 
-const logo = require('../assets/miniLogo.png')
+const logo = require('../assets/miniLogo.png');
+const api_base_url = 'https://admin.borneopoint.co.id/api/';
+// const api_base_url = 'http://10.10.11.10/api/';
 // const indomaretLogo = require('../assets/images/indomart.png')
 // const alfamartLogo = require('../assets/images/alfamart_new.png')
 // const cimbniagaLogo = require('../assets/images/cimbniaga.jpg')
@@ -47,7 +49,8 @@ class Forex extends Component<any,any>{
       discount_not_valid: undefined,
       gettingAccountInfo: false,
       coupon: undefined,
-      code: undefined
+      code: undefined,
+      invalidCoupon: '',
     }
   }
     
@@ -55,7 +58,7 @@ class Forex extends Component<any,any>{
     
   componentDidMount = async () => {
     const check_login = await AsyncStorage.getItem('@id_login')
-    axios.get('https://admin.borneopoint.co.id/api/get_user', {params: {
+    axios.get(api_base_url+'get_user', {params: {
       id_login: check_login
     }})
     .then(resp => {
@@ -63,13 +66,12 @@ class Forex extends Component<any,any>{
         phone_number: resp.data.phone,
         loading: false
       })
-      // console.log(this.state.status)
     })
     .catch(err => {
-      console.log('Get User : '+err)
+      ToastAndroid.show(err.message, ToastAndroid.SHORT)
     })
 
-    axios.get('https://admin.borneopoint.co.id/api/get_topup_platform')
+    axios.get(api_base_url+'get_topup_platform')
     .then(resp => {
         //   if(typeof resp.data === 'undefined'){
         //     this.componentDidMount()
@@ -80,11 +82,11 @@ class Forex extends Component<any,any>{
                 topup_platform: resp.data
             })
             // alert(JSON.stringify(resp.data))
-    }).catch(e => {
+    }).catch(err => {
         this.setState({
             loading: false
         })
-        console.log("GET_ALL_OPERATOR => ", e)
+        ToastAndroid.show(err.message, ToastAndroid.SHORT)
     })
   }
   componentDidUpdate = () => {
@@ -154,31 +156,56 @@ class Forex extends Component<any,any>{
 }
 
 check_coupon = async () => {
+      
+  if (this.state.amount === undefined) {
+    this.amountInput.focus();
+    ToastAndroid.show('Please fill your amount', ToastAndroid.SHORT)
+    return false;
+  }
+
+  if(this.state.coupon===undefined || this.state.coupon=='') {
+    this.setState({discount_not_valid: undefined});
+    ToastAndroid.show('Please fill coupon field', ToastAndroid.SHORT)
+    this.couponInput.focus();
+    return false;
+  }
+
   this.setState({ gettingAccountInfo: true })
-
   const id_login = await AsyncStorage.getItem('@id_login')
-
-  axios.post('https://admin.borneopoint.co.id/api/check_coupon', {code: this.state.coupon, id_login: id_login})
-  .then(resp => {
-    console.log('Check Coupoon => '+JSON.stringify(resp))
-    if (resp.data === '') {
+  
+  axios.post(api_base_url+'check_coupon', {
+      code: this.state.coupon,
+      id_login: id_login,
+      type: 'topup',
+      amount: this.state.selectedPlatform.rate * this.state.amount,
+  }).then(resp => {
+    
+    if (typeof resp.data == 'string') {
       this.setState({
         gettingAccountInfo: false,
-        discount_not_valid: 'Voucher is not valid',
+        discount_not_valid: resp.data.length?resp.data:'Coupon not valid',
         discount: undefined,
+        coupon: undefined,
         code: undefined
-      })
+      }); this.couponInput.clear();
     } else {
       this.setState({
         gettingAccountInfo: false,
+        discount_not_valid: undefined,
         discount: resp.data.discount,
         code: resp.data.code
       })
     }
   })
   .catch(err => {
-    console.debug('Check Coupon Error => '+err)
+    ToastAndroid.show(err.message, ToastAndroid.SHORT)
   })
+  console.log(
+    this.state.selectedOperator != -1,
+    this.state.selectedPlatform.length != 0,
+    +this.state.amount <= 0,
+    this.state.discount_not_valid === undefined
+  )
 }
 
 handlePay = async () => {
@@ -201,7 +228,7 @@ handlePay = async () => {
   }
 
   // product_operator, product_nominal, phone_number, user_id, product_id, pulsa_price, price_borneo
-  axios.get('https://admin.borneopoint.co.id/api/top_up_request', {params:{data}})
+  axios.get(api_base_url+'top_up_request', {params:{data}})
   .then(response => {
     this.setState({loading: false})
     if (response.data.status === 'Success'){
@@ -233,7 +260,7 @@ handlePay = async () => {
       }
     }
   })
-  .catch((e) => console.log(e))
+  .catch((err) => {ToastAndroid.show(err.message, ToastAndroid.SHORT)})
 }
 
 format = (x) => {
@@ -327,7 +354,8 @@ format = (x) => {
             </View>
         </View> */}
 
-        <View>
+        {this.state.selectedPlatform.length != 0 ?
+          <View>
             <View>
                 <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Rate</Text>
             </View>
@@ -343,31 +371,7 @@ format = (x) => {
                 }
                 {/*editable={this.state.selectedOperator !== -1 && this.state.selectedProduct !== -1 ? true : false}*/}
             </View>
-        </View>
 
-
-        {this.state.selectedPlatform.length != 0 ?
-          <View>
-            <View>
-              <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Claim Coupon</Text>
-            </View>
-            <View style={{ borderRadius: wp('2.222223%'), elevation: 2, marginTop: wp('3%'), flexDirection: 'row', aspectRatio: 328/46, overflow: 'hidden', width: wp('90%')}}>
-              <TextInput placeholder={'Enter Coupon Code'} autoCapitalize={'none'} placeholderTextColor={'#ccc'} onChangeText={(text) => this.setState({ coupon: text })} style={{flex:1 , paddingLeft: wp('5%'), fontSize: wp('4%')}}/>
-              <TouchableOpacity style={{ width: wp('20%'), backgroundColor: '#3269B3', justifyContent: 'center', alignItems: 'center'}} onPress={this.check_coupon}>{
-                this.state.gettingAccountInfo ?             
-                  <ActivityIndicator size="large" color="white"/> :             
-                  <Text style={{fontSize: wp('4%'), color: 'white', fontWeight: 'bold'}}>Check</Text>
-              }</TouchableOpacity>
-            </View>
-            {this.state.discount !== undefined ?
-              <Text style={{ fontSize: wp('3%') }}>Discount: Rp {this.format(this.state.discount)}</Text>
-              :
-              (this.state.discount_not_valid !== undefined ?
-                <Text style={{ fontSize: wp('3%'), color: '#FF0000' }}>Voucher is not valid</Text>
-                :
-                null
-              )
-            }
             <View>
                 <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Amount</Text>
             </View>
@@ -381,8 +385,38 @@ format = (x) => {
                   }}
                   style={{fontSize: 16, paddingHorizontal: 10}}
                   keyboardType='phone-pad'
+                  ref={input => { this.amountInput = input }}
                 />
             </View>
+
+            <View>
+              <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Claim Coupon</Text>
+            </View>
+            <View style={{ borderRadius: wp('2.222223%'), elevation: 2, marginTop: wp('3%'), flexDirection: 'row', aspectRatio: 328/46, overflow: 'hidden', width: wp('90%')}}>
+              <TextInput 
+                placeholder={'Enter Coupon Code'} 
+                autoCapitalize={'none'} 
+                placeholderTextColor={'#ccc'} 
+                onChangeText={(text) => this.setState({ coupon: text })} 
+                style={{flex:1 , paddingLeft: wp('5%'), fontSize: wp('4%')}}
+                ref={input => { this.couponInput = input }}
+              />
+              <TouchableOpacity style={{ width: wp('20%'), backgroundColor: '#3269B3', justifyContent: 'center', alignItems: 'center'}} onPress={this.check_coupon}>{
+                this.state.gettingAccountInfo ?             
+                  <ActivityIndicator size="large" color="white"/> :             
+                  <Text style={{fontSize: wp('4%'), color: 'white', fontWeight: 'bold'}}>Check</Text>
+              }</TouchableOpacity>
+            </View>
+
+            {this.state.discount !== undefined ?
+              <Text style={{ fontSize: wp('3%') }}>Discount: Rp {this.format(this.state.discount)}</Text>
+              :
+              (this.state.discount_not_valid !== undefined ?
+                <Text style={{ fontSize: wp('3%'), color: '#FF0000' }}>{this.state.discount_not_valid}</Text>
+                :
+                null
+              )
+            }
           </View>
           :
           null
@@ -460,7 +494,17 @@ format = (x) => {
       }}>
         <TouchableOpacity
           onPress={() => this.handlePay()}
-          style={{ backgroundColor: this.state.selectedOperator != -1 && this.state.selectedPlatform.length != 0 && this.state.amount != '' ? '#3269B3': '#ccc', borderRadius: wp('2.223%'), padding: wp('2.5%'), flexDirection: 'row'}} disabled={!(this.state.selectedOperator != -1 && this.state.selectedPlatform.length != 0 && this.state.amount != '')}>
+          style={{ backgroundColor: 
+             this.state.selectedOperator != -1 &&
+             this.state.selectedPlatform.length != 0 &&
+             +this.state.amount > 0 &&
+             this.state.discount_not_valid === undefined ? '#3269B3': '#ccc', borderRadius: wp('2.223%'), padding: wp('2.5%'), flexDirection: 'row'
+           }} disabled={
+            !(this.state.selectedOperator != -1 &&
+             this.state.selectedPlatform.length != 0 &&
+             +this.state.amount > 0 &&
+             this.state.discount_not_valid === undefined)
+           }>
           <Image source={logo} style={{marginRight: wp('2.5%')}}/>
           <Text style={{fontWeight: 'bold', fontSize: wp('5%'), color: 'white'}}>Pay</Text>
         </TouchableOpacity>

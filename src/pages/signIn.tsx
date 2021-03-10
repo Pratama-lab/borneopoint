@@ -20,7 +20,9 @@ import {AuthContext} from '../context'
 import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-community/google-signin';
 import { AccessToken, GraphRequest, GraphRequestManager, LoginManager } from 'react-native-fbsdk';
 
-const logo = require('../assets/logo.png')
+const logo = require('../assets/logo.png');
+const api_base_url = 'https://admin.borneopoint.co.id/api/';
+// const api_base_url = 'http://10.10.11.10/api/';
 
 class SignIn extends Component<any,{}>{
   constructor(props: any){
@@ -60,8 +62,7 @@ class SignIn extends Component<any,{}>{
         id_email: userInfo.user.id,
         photo: userInfo.user.photo
       })
-      console.log(userInfo)
-      axios.get('https://admin.borneopoint.co.id/api/insert_user', {params:{
+      axios.get(api_base_url+'insert_user', {params:{
           nama: this.state.name,
           email: this.state.email,
           id_login: this.state.id_email,
@@ -71,7 +72,7 @@ class SignIn extends Component<any,{}>{
         AsyncStorage.setItem('@id_login', this.state.id_email)
         
         const check_login = await AsyncStorage.getItem('@id_login')
-        axios.get('https://admin.borneopoint.co.id/api/get_user', {params: {
+        axios.get(api_base_url+'get_user', {params: {
           id_login: check_login
         }})
         .then(resp => {
@@ -95,11 +96,10 @@ class SignIn extends Component<any,{}>{
         })
       })
       .catch(err => {
-        console.log('Insert user: '+err)
-        ToastAndroid.show('This account already exists', ToastAndroid.SHORT)
+        ToastAndroid.show(err.message, ToastAndroid.SHORT)
       })
-    }
-    catch (error) {
+    } catch (error) {
+      log.debug(error.message);
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         console.log('SIGN_IN_CANCELLED')
       } else if (error.code === statusCodes.IN_PROGRESS) {
@@ -131,7 +131,7 @@ class SignIn extends Component<any,{}>{
           // alert(JSON.stringify(user));
           // console.log('result:', user);
 
-          axios.get('https://admin.borneopoint.co.id/api/insert_user', {params:{
+          axios.get(api_base_url+'insert_user', {params:{
             nama: this.state.userInfo.name,
             email: this.state.userInfo.email,
             id_login: this.state.userInfo.id,
@@ -141,7 +141,7 @@ class SignIn extends Component<any,{}>{
 
             const check_login = await AsyncStorage.getItem('@id_login')
             
-            axios.get('https://admin.borneopoint.co.id/api/get_user', {params: {
+            axios.get(api_base_url+'get_user', {params: {
               id_login: check_login
             }})
             .then(resp => {
@@ -214,7 +214,7 @@ class SignIn extends Component<any,{}>{
   //   }
   // }
   signIn = () => {
-    axios.post('https://admin.borneopoint.co.id/api/login', {email: this.state.email_native, password: this.password})
+    axios.post(api_base_url+'login', {email: this.state.email_native, password: this.password})
     .then(resp => {
       // alert(JSON.stringify(resp.data))
       if (resp.data.data.message === 'These credentials do not match our records.') {
@@ -239,10 +239,9 @@ class SignIn extends Component<any,{}>{
           })
         }
       }
-    })
-    .catch(err => {
+    }).catch(err => {
       console.log("INSERT USER BY EMAIL => "+err)
-      // alert(JSON.stringify(err))
+      ToastAndroid.show(err.message, ToastAndroid.SHORT);
     })
   }
 

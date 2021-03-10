@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, ImageBackground, TextInput, TouchableOpacity, Image, StyleSheet, ActivityIndicator } from 'react-native'
+import { View, Text, ImageBackground, TextInput, TouchableOpacity, Image, StyleSheet, ActivityIndicator, ToastAndroid } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen'
 import AsyncStorage from '@react-native-community/async-storage'
@@ -103,6 +103,7 @@ export default class ktpnphone extends React.Component {
             if (response.didCancel) {
                 console.log('User cancelled image picker');
             } else if (response.error) {
+                // ToastAndroid.show(response.error, ToastAndroid.SHORT);
                 console.log('ImagePicker Error: ', response.error);
             } else if (response.customButton) {
                 console.log('User tapped custom button: ', response.customButton);

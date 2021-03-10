@@ -16,7 +16,9 @@ import { AccessToken, GraphRequest, GraphRequestManager, LoginManager } from 're
 import axios from 'axios'
 import AsyncStorage from '@react-native-community/async-storage'
 
-const logo = require('../assets/logo.png')
+const logo = require('../assets/logo.png');
+const api_base_url = 'https://admin.borneopoint.co.id/api/';
+//const api_base_url = 'http://10.10.11.10/api/';
 
 class SignUp extends Component<any,{}>{
   constructor(props: any){
@@ -63,7 +65,7 @@ class SignUp extends Component<any,{}>{
         photo: userInfo.user.photo
       })
       console.log(userInfo)
-      axios.get('https://admin.borneopoint.co.id/api/insert_user', {params:{
+      axios.get(api_base_url+'insert_user', {params:{
           nama: this.state.name,
           email: this.state.email,
           id_login: this.state.id_email,
@@ -74,7 +76,7 @@ class SignUp extends Component<any,{}>{
 
         const check_login = await AsyncStorage.getItem('@id_login')
 
-        axios.get('https://admin.borneopoint.co.id/api/get_user', {params: {
+        axios.get(api_base_url+'get_user', {params: {
           id_login: check_login
         }})
         .then(resp => {
@@ -98,6 +100,7 @@ class SignUp extends Component<any,{}>{
         })
       })
       .catch(err => {
+        console.log(err.message);
         // console.log('Insert user: '+err)
         ToastAndroid.show('This account already exists', ToastAndroid.SHORT)
       })
@@ -135,7 +138,7 @@ class SignUp extends Component<any,{}>{
           // alert(JSON.stringify(user));
           // console.log('result:', user);
 
-          axios.get('https://admin.borneopoint.co.id/api/insert_user', {params:{
+          axios.get(api_base_url+'insert_user', {params:{
             nama: this.state.userInfo.name,
             email: this.state.userInfo.email,
             id_login: this.state.userInfo.id,
@@ -145,7 +148,7 @@ class SignUp extends Component<any,{}>{
 
             const check_login = await AsyncStorage.getItem('@id_login')
 
-            axios.get('https://admin.borneopoint.co.id/api/get_user', {params: {
+            axios.get(api_base_url+'get_user', {params: {
               id_login: check_login
             }})
             .then(resp => {
@@ -231,7 +234,7 @@ class SignUp extends Component<any,{}>{
   // }
 
   signUp = () => {
-    axios.get('https://admin.borneopoint.co.id/api/insert_user', {params:{
+    axios.get(api_base_url+'insert_user', {params:{
       nama: this.name,
       email: this.state.email_native,
       password: this.password,

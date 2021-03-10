@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import {Picker} from '@react-native-community/picker';
-import { ScrollView , Alert, View, Text, TextInput, TouchableOpacity, Image, ActivityIndicator, FlatList, StyleSheet, BackHandler } from 'react-native';
+import { ScrollView , Alert, View, Text, TextInput, TouchableOpacity, Image, ActivityIndicator, FlatList, StyleSheet, BackHandler, ToastAndroid } from 'react-native';
 import FastImage from 'react-native-fast-image'
 import { widthPercentageToDP  as wp} from 'react-native-responsive-screen';
 import axios from 'axios'
@@ -10,6 +10,8 @@ import { AuthContext } from '../context'
 import AsyncStorage from '@react-native-community/async-storage';
 
 const logo = require('../assets/miniLogo.png')
+const api_base_url = 'https://admin.borneopoint.co.id/api/';
+// const api_base_url = 'http://10.10.11.10/api/';
 
 class Mobile extends Component<any,any>{
   constructor(props){
@@ -49,7 +51,7 @@ class Mobile extends Component<any,any>{
 
 
   componentDidMount = async () => {
-    axios.get('https://admin.borneopoint.co.id/api/get_all_operator', {params:{
+    axios.get(api_base_url+'get_all_operator', {params:{
       operator: this.props.route.params.itemType
     }})
     .then(data => {
@@ -80,7 +82,7 @@ class Mobile extends Component<any,any>{
     //     if (text.length === 4 && this.state.after4digit === false) {
     //       for(var k in prefixes) {
     //         if (text.substr(0, 4) === prefixes[k]) {
-    //           axios.get('https://admin.borneopoint.co.id/api/get_all_product', {params:{
+    //           axios.get(api_base_url+'get_all_product', {params:{
     //             itemType: this.props.route.params.itemType,
     //             operator: k.slice(0, -1)
     //           }})
@@ -114,7 +116,7 @@ class Mobile extends Component<any,any>{
     //   }else{
     //     for(var k in prefixes) {
     //       if (text.substr(0, 4) === prefixes[k]) {
-    //         axios.get('https://admin.borneopoint.co.id/api/get_all_product', {params:{
+    //         axios.get(api_base_url+'get_all_product', {params:{
     //           itemType: this.props.route.params.itemType,
     //           operator: k.slice(0, -1)
     //         }})
@@ -143,7 +145,7 @@ class Mobile extends Component<any,any>{
     this.setState({ selectedOperator: itemValue, productEnabled: false})
     if (itemValue !== -1){
       this.setState({ loading: true})
-      axios.get('https://admin.borneopoint.co.id/api/get_all_product', {params:{
+      axios.get(api_base_url+'get_all_product', {params:{
         itemType: this.props.route.params.itemType,
         operator: itemValue
       }})
@@ -170,26 +172,28 @@ class Mobile extends Component<any,any>{
   selectingPaymentMethod = (paymentName) => {
     try{
       this.setState({payment_method: paymentName})
-    }catch(error){ console.debug(error) }
+    }catch(error){ console.debug('debug 1',error) }
   }
 
   selectingPulsa = async (item) => {
-    axios.get('https://admin.borneopoint.co.id/api/get_all_product', {params:{
-      itemType: this.props.route.params.itemType,
-      operator: item
-    }})
-    .then(data => {
-      this.setState({
-        selectedProduct: -1,
-        loading: false,
-        all_product: data.data,
-        productEnabled: true,
-        price: 0,
-        payment_method: undefined,
-        selectedOperator: item
-      })
-    }).catch(e => console.log(e))
-    console.log("ALL IN ITEM VAR ==> ", item)
+    // axios.get(api_base_url+'get_all_product', {params:{
+    //   itemType: this.props.route.params.itemType,
+    //   operator: item
+    // }})
+    // .then(data => {
+    //   this.setState({
+    //     selectedProduct: -1,
+    //     loading: false,
+    //     all_product: data.data,
+    //     productEnabled: true,
+    //     price: 0,
+    //     payment_method: undefined,
+    //     selectedOperator: item
+    //   })
+    // }).catch(e => {
+    //   console.debug('debug 2',e)
+    // })
+    // console.log("ALL IN ITEM VAR ==> ", item)
     // product_operator, product_nominal, phone_number, user_id, product_id, pulsa_price, price_borneo
     this.setState({
       semi_selecting_pulsa: item.pulsa_code,
@@ -235,30 +239,47 @@ class Mobile extends Component<any,any>{
   // }
 
   check_coupon = async () => {
-    this.setState({ gettingAccountInfo: true })
+    
+    if (this.state.price_borneo === undefined) {
+      ToastAndroid.show('Please select nominal amount', ToastAndroid.SHORT)
+      return false;
+    }
 
+    if(this.state.coupon===undefined || this.state.coupon=='') {
+      this.setState({discount_not_valid: undefined});
+      ToastAndroid.show('Please fill coupon field', ToastAndroid.SHORT)
+      this.couponInput.focus();
+      return false;
+    }
+
+    this.setState({ gettingAccountInfo: true })
     const id_login = await AsyncStorage.getItem('@id_login')
 
-    axios.post('https://admin.borneopoint.co.id/api/check_coupon', {code: this.state.coupon, id_login: id_login})
-    .then(resp => {
-      console.log('Check Coupoon => '+JSON.stringify(resp))
-      if (resp.data === '') {
+    axios.post(api_base_url+'check_coupon', {
+      code: this.state.coupon,
+      id_login: id_login,
+      type: 'etoll',
+      amount: this.state.price_borneo,
+    }).then(resp => {
+      if (typeof resp.data == 'string') {
         this.setState({
           gettingAccountInfo: false,
-          discount_not_valid: 'Voucher is not valid',
+          discount_not_valid: resp.data.length?resp.data:'Coupon not valid',
           discount: undefined,
+          coupon: undefined,
           code: undefined
-        })
+        }); this.couponInput.clear();
       } else {
         this.setState({
           gettingAccountInfo: false,
+          discount_not_valid: undefined,
           discount: resp.data.discount,
           code: resp.data.code
         })
       }
     })
     .catch(err => {
-      console.debug('Check Coupon Error => '+err)
+      ToastAndroid.show(err.message, ToastAndroid.SHORT);
     })
   }
 
@@ -279,7 +300,7 @@ class Mobile extends Component<any,any>{
     }
 
     // product_operator, product_nominal, phone_number, user_id, product_id, pulsa_price, price_borneo
-    axios.get('https://admin.borneopoint.co.id/api/top_up_request', {params:{data}})
+    axios.get(api_base_url+'top_up_request', {params:{data}})
     .then(response => {
       this.setState({loading: false})
       if (response.data.data.message === 'PROCESS'){
@@ -413,7 +434,14 @@ class Mobile extends Component<any,any>{
                       <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Claim Coupon</Text>
                     </View>
                     <View style={{ borderRadius: wp('2.222223%'), elevation: 2, marginTop: wp('3%'), flexDirection: 'row', aspectRatio: 328/46, overflow: 'hidden', width: wp('90%')}}>
-                      <TextInput placeholder={'Enter Coupon Code'} autoCapitalize={'none'} placeholderTextColor={'#ccc'} onChangeText={(text) => this.setState({ coupon: text })} style={{flex:1 , paddingLeft: wp('5%'), fontSize: wp('4%')}}/>
+                      <TextInput 
+                        placeholder={'Enter Coupon Code'} 
+                        autoCapitalize={'none'} 
+                        placeholderTextColor={'#ccc'} 
+                        onChangeText={(text) => this.setState({ coupon: text })} 
+                        style={{flex:1 , paddingLeft: wp('5%'), fontSize: wp('4%')}} 
+                        ref={input => {this.couponInput = input}}
+                      />
                       <TouchableOpacity style={{ width: wp('20%'), backgroundColor: '#3269B3', justifyContent: 'center', alignItems: 'center'}} onPress={this.check_coupon}>{
                         this.state.gettingAccountInfo ?             
                           <ActivityIndicator size="large" color="white"/> :             
@@ -423,8 +451,8 @@ class Mobile extends Component<any,any>{
                     {this.state.discount !== undefined ?
                       <Text style={{ fontSize: wp('3%') }}>Discount: Rp {this.format(this.state.discount)}</Text>
                       :
-                      (this.state.discount_not_valid === 'Voucher is not valid' ?
-                        <Text style={{ fontSize: wp('3%'), color: '#FF0000' }}>Voucher is not valid</Text>
+                      (this.state.discount_not_valid !== undefined ?
+                        <Text style={{ fontSize: wp('3%'), color: '#FF0000' }}>{this.state.discount_not_valid}</Text>
                         :
                         null
                       )
@@ -446,9 +474,9 @@ class Mobile extends Component<any,any>{
                                   </View>
                                   <View style={{ marginLeft: wp('5%'), justifyContent: 'center', width: wp('35%'), alignItems: 'flex-end' }}>
                                   {this.state.code !== undefined ?
-                                    <Text style={{color: '#1DF318', fontWeight: 'bold', fontSize: wp('4%')}}>Rp {this.format(this.state.price_pulsa-this.state.discount)}</Text>
+                                    <Text style={{color: '#1DF318', fontWeight: 'bold', fontSize: wp('4%')}}>Rp {this.format(item.pulsa_price-this.state.discount)}</Text>
                                     :
-                                    <Text style={{color: '#1DF318', fontWeight: 'bold', fontSize: wp('4%')}}>Rp {this.format(this.state.price_pulsa)}</Text>
+                                    <Text style={{color: '#1DF318', fontWeight: 'bold', fontSize: wp('4%')}}>Rp {this.format(item.pulsa_price)}</Text>
                                   }
                                   </View>
                               </TouchableOpacity>
