@@ -216,6 +216,11 @@ class Mobile extends Component<any,any>{
       price_borneo: item.price_borneo,
       pulsa_price: item.pulsa_price
     })
+
+    if (this.state.coupon !== undefined) {
+      const _this = this;
+      setTimeout(function(){_this.check_coupon()},300);
+    }
 	}
 
   format = (x) => {
