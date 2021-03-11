@@ -21,8 +21,8 @@ import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-com
 import { AccessToken, GraphRequest, GraphRequestManager, LoginManager } from 'react-native-fbsdk';
 
 const logo = require('../assets/logo.png');
-// const api_base_url = 'https://admin.borneopoint.co.id/api/';
-const api_base_url = 'http://10.10.11.10/api/';
+const api_base_url = 'https://admin.borneopoint.co.id/api/';
+// const api_base_url = 'http://10.10.11.10/api/';
 
 class SignIn extends Component<any,{}>{
   constructor(props: any){
