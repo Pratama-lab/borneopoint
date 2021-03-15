@@ -272,10 +272,6 @@ class Home extends Component<any,any>{
           {this.state.id_login === null ?
             <>
               <TouchableOpacity style={styles.ppobItem} onPress={() => ToastAndroid.show("Please Login First", ToastAndroid.SHORT)}>
-                <Image style={styles.ppobItemImage} source={money}/>
-                <Text style={styles.ppobItemText}>Forex</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.ppobItem} onPress={() => ToastAndroid.show("Please Login First", ToastAndroid.SHORT)}>
                 <Image style={styles.ppobItemImage} source={bpjs}/>
                 <Text style={styles.ppobItemText}>EToll</Text>
               </TouchableOpacity>
@@ -283,18 +279,18 @@ class Home extends Component<any,any>{
                 <Image style={styles.ppobItemImage} source={vouchers} />
                 <Text style={styles.ppobItemText}>Vouchers</Text>
               </TouchableOpacity>
+              <TouchableOpacity style={styles.ppobItem} onPress={() => ToastAndroid.show("Please Login First", ToastAndroid.SHORT)}>
+                {/* <Image style={styles.ppobItemImage} source={money}/>
+                <Text style={styles.ppobItemText}>Forex</Text> */}
+              </TouchableOpacity>
               <TouchableOpacity style={styles.ppobItem}>
-                <Image style={styles.ppobItemImage} source={others}/>
-                <Text style={styles.ppobItemText}>Others</Text>
+                {/* <Image style={styles.ppobItemImage} source={others}/>
+                <Text style={styles.ppobItemText}>Others</Text> */}
               </TouchableOpacity>
             </>
             :
             (this.state.status === 'Waiting' ?
               <>
-                <TouchableOpacity style={styles.ppobItem} onPress={() => ToastAndroid.show("Your account is being verified, to access this feature, your account must be active first", ToastAndroid.SHORT)}>
-                  <Image style={styles.ppobItemImage} source={money}/>
-                  <Text style={styles.ppobItemText}>Forex</Text>
-                </TouchableOpacity>
                 <TouchableOpacity style={styles.ppobItem} onPress={() => ToastAndroid.show("Your account is being verified, to access this feature, your account must be active first", ToastAndroid.SHORT)}>
                   <Image style={styles.ppobItemImage} source={bpjs}/>
                   <Text style={styles.ppobItemText}>EToll</Text>
@@ -303,17 +299,17 @@ class Home extends Component<any,any>{
                   <Image style={styles.ppobItemImage} source={vouchers} />
                   <Text style={styles.ppobItemText}>Vouchers</Text>
                 </TouchableOpacity>
+                <TouchableOpacity style={styles.ppobItem} onPress={() => ToastAndroid.show("Your account is being verified, to access this feature, your account must be active first", ToastAndroid.SHORT)}>
+                  {/* <Image style={styles.ppobItemImage} source={money}/>
+                  <Text style={styles.ppobItemText}>Forex</Text> */}
+                </TouchableOpacity>
                 <TouchableOpacity style={styles.ppobItem}>
-                  <Image style={styles.ppobItemImage} source={others}/>
-                  <Text style={styles.ppobItemText}>Others</Text>
+                  {/* <Image style={styles.ppobItemImage} source={others}/>
+                  <Text style={styles.ppobItemText}>Others</Text> */}
                 </TouchableOpacity>
               </>
               :
               <>
-                <TouchableOpacity style={styles.ppobItem} onPress={() => this.goTo('Forex')}>
-                  <Image style={styles.ppobItemImage} source={money}/>
-                  <Text style={styles.ppobItemText}>Forex</Text>
-                </TouchableOpacity>
                 <TouchableOpacity style={styles.ppobItem} onPress={() => this.goTo('EToll', {itemType: 'etoll'})}>
                   <Image style={styles.ppobItemImage} source={bpjs}/>
                   <Text style={styles.ppobItemText}>EToll</Text>
@@ -322,9 +318,13 @@ class Home extends Component<any,any>{
                   <Image style={styles.ppobItemImage} source={vouchers} />
                   <Text style={styles.ppobItemText}>Vouchers</Text>
                 </TouchableOpacity>
+                <TouchableOpacity style={styles.ppobItem} onPress={() => this.goTo('Forex')}>
+                  {/* <Image style={styles.ppobItemImage} source={money}/>
+                  <Text style={styles.ppobItemText}>Forex</Text> */}
+                </TouchableOpacity>
                 <TouchableOpacity style={styles.ppobItem}>
-                  <Image style={styles.ppobItemImage} source={others}/>
-                  <Text style={styles.ppobItemText}>Others</Text>
+                  {/* <Image style={styles.ppobItemImage} source={others}/>
+                  <Text style={styles.ppobItemText}>Others</Text> */}
                 </TouchableOpacity>
               </>
             )

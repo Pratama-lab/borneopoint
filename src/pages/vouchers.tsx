@@ -43,7 +43,12 @@ class Mobile extends Component<any,any>{
       discount_not_valid: undefined,
       gettingAccountInfo: false,
       coupon: undefined,
-      code: undefined
+      code: undefined,
+      topup_platform: [],
+      currenPlatform: null,
+      selectedPlatform: [],
+      is_forex: false,
+      amount: undefined
     }
   }
 
@@ -75,9 +80,21 @@ class Mobile extends Component<any,any>{
         this.setState({
           loading: false,
           all_operator: data.data
+        });
+
+        let all_operator = this.state.all_operator;
+
+        all_operator.push('hotforex')
+
+        this.setState({
+          all_operator: all_operator
         })
+
+        console.log('operators: ',this.state.all_operator)
       }
-    }).catch(e => console.log("GET_ALL_OPERATOR => ", data))
+    }).catch(e => console.log("GET_ALL_OPERATOR => ", e))
+
+    
   }
 
   refresh = () => this.componentDidMount
@@ -155,31 +172,75 @@ class Mobile extends Component<any,any>{
     // }
 
   selectingOperator = async (itemValue) => {
-    console.log(itemValue)
-    this.setState({ selectedOperator: itemValue, productEnabled: false})
-    if (itemValue !== -1){
-      this.setState({ loading: true})
-      axios.get(api_base_url+'get_all_product', {params:{
-        itemType: this.props.route.params.itemType,
-        operator: itemValue
-      }})
+    this.setState({
+      discount_not_valid: undefined,
+      discount: undefined,
+      coupon: undefined,
+      code: undefined,
+      is_forex: false
+    }); 
+    if (this.couponInput) this.couponInput.clear();
+    if (itemValue === 'hotforex') {
+      this.setState({loading:true})
+
+      console.log(itemValue)
+      axios.get(api_base_url+'get_topup_platform')
       .then(resp => {
         this.setState({
           loading: false,
-          all_product: resp.data,
+          topup_platform: resp.data,
+          selectedOperator: itemValue,
+        })
+
+        this.setState({selectedPlatform: this.state.topup_platform[0], is_forex: (itemValue === 'hotforex')})
+      }).catch(err => {
+          this.setState({
+              loading: false,
+              semi_selecting_pulsa: undefined,
+              payment_method: undefined,
+              price: 0,
+              price_pulsa: 0,
+              selectedPlatform: [],
+              amount: undefined,
+          })
+          ToastAndroid.show(err.message, ToastAndroid.SHORT)
+      })
+      this.setState({
+          
+      })
+    } else {
+      console.log(itemValue)
+      this.setState({ selectedOperator: itemValue, productEnabled: false})
+      if (itemValue !== -1){
+        this.setState({ loading: true})
+        axios.get(api_base_url+'get_all_product', {params:{
+          itemType: this.props.route.params.itemType,
+          operator: itemValue
+        }})
+        .then(resp => {
+          this.setState({
+            loading: false,
+            all_product: resp.data,
+            semi_selecting_pulsa: undefined,
+            payment_method: undefined,
+            price: 0,
+            price_pulsa: 0,
+            selectedPlatform: [],
+            amount: undefined,
+          })
+        }).catch(e => console.log(e))
+      } else {
+        this.setState({
+          all_product: undefined,
+          selectedProduct: -1,
+          price: 0,
+          payment_method: undefined,
           semi_selecting_pulsa: undefined,
           price_pulsa: 0,
+          selectedPlatform: [],
+          amount: undefined,
         })
-      }).catch(e => console.log(e))
-    } else {
-      this.setState({
-        all_product: undefined,
-        selectedProduct: -1,
-        price: 0,
-        payment_method: undefined,
-        semi_selecting_pulsa: undefined,
-        price_pulsa: 0,
-      })
+      }
     }
   }
 
@@ -224,12 +285,16 @@ class Mobile extends Component<any,any>{
 	}
 
   format = (x) => {
-    if(/^\d+$/.test(x.toString().trim()) === true){
-      var parts = x.toString().split(".");
-      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-      return parts.join(".");
-    }else{
-      return x;
+    if (x !== undefined) {
+      if(/^\d+$/.test(x.toString().trim()) === true){
+        var parts = x.toString().split(".");
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        return parts.join(".");
+      }else{
+        return x;
+      }
+    } else {
+      return '';
     }
   }
 
@@ -256,9 +321,17 @@ class Mobile extends Component<any,any>{
   // }
 
   check_coupon = async () => {
-    if (this.state.price_borneo === undefined) {
-      ToastAndroid.show('Please select nominal amount', ToastAndroid.SHORT)
-      return false;
+    if (this.state.is_forex) {
+      if (this.state.amount === undefined || this.state.amount == '') {
+        this.amountInput.focus();
+        ToastAndroid.show('Please fill your amount', ToastAndroid.SHORT)
+        return false;
+      }
+    } else {
+      if (this.state.price_borneo === undefined || this.state.price_borneo == '') {
+        ToastAndroid.show('Please select nominal amount', ToastAndroid.SHORT)
+        return false;
+      }
     }
 
     if(this.state.coupon===undefined || this.state.coupon=='') {
@@ -274,8 +347,8 @@ class Mobile extends Component<any,any>{
     axios.post(api_base_url+'check_coupon', {
       code: this.state.coupon,
       id_login: id_login,
-      type: 'voucher',
-      amount: this.state.price_borneo,
+      type: (this.state.is_forex ? 'topup' : 'voucher'),
+      amount: (this.state.is_forex ? (this.state.selectedPlatform.rate * this.state.amount) : this.state.price_borneo),
     }).then(resp => {
       if (typeof resp.data == 'string') {
         this.setState({
@@ -402,9 +475,12 @@ class Mobile extends Component<any,any>{
                     style={{ flex: 1 }}
                     onValueChange={(itemValue, itemIndex) => this.selectingOperator(itemValue)}>
                     <Picker.Item value={-1} label='Choose item ...' />
-                    {
-                      this.state.all_operator != undefined ? 
-                  this.state.all_operator.map((item,index) => <Picker.Item key={index} label={item} value={item} />) : null
+                    {this.state.all_operator != undefined ? 
+                      this.state.all_operator.map((item,index) => (
+                        <Picker.Item key={index} label={item} value={item} />
+                      ))
+                      :
+                      null
                     }
                   </Picker>
                 </View>
@@ -439,28 +515,66 @@ class Mobile extends Component<any,any>{
                       )
                     }
 
-                    <View style={{ marginTop: wp('5%'), marginBottom: wp('3%') }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: wp('5%') }}>Nominal</Text>
-                    </View>
-                    <FlatList
-                        data={this.state.all_product}
-                        keyExtractor={item => item.id_pulsa}
-                        ListFooterComponent={<View style={{ marginBottom: wp('5%') }} />}
-                        renderItem={({item}) => {
-                          return (
-                          <View>
-                              <TouchableOpacity onPress={() => this.selectingPulsa(item)} style={{ padding: wp('3'), marginBottom: wp('2'), backgroundColor: this.state.semi_selecting_pulsa == item.pulsa_code ? '#1DF318' : '#FFF', elevation: 2, borderRadius: wp('2.3%'), width: wp('90%'), flexDirection: 'row' }}>
-                                  <View style={{ marginLeft: wp('2%'), justifyContent: 'center', width: wp('40%') }}>
-                                      <Text style={{ fontSize: 17, fontFamily: 'Ubuntu-Regular' }}>{this.format(item.pulsa_nominal)}</Text>
-                                  </View>
-                                  <View style={{ marginLeft: wp('5%'), justifyContent: 'center', width: wp('35%'), alignItems: 'flex-end' }}>
-                                      <Text style={{fontFamily: 'Ubuntu-Medium', fontSize: 17, color: '#3269B3' }}>Rp {this.format(item.price_borneo)}</Text>
-                                  </View>
-                              </TouchableOpacity>
-                          </View>
-                          )
-                        }}
-                    />
+                    {this.state.is_forex ?
+                      <>
+                        <View>
+                            <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Rate</Text>
+                        </View>
+                        <View style={{ elevation: 2, backgroundColor: 'white', borderRadius  : wp('2.22223%') }}>
+                            {typeof this.state.selectedPlatform == 'object' ?
+                                <View>
+                                    <Text style={{fontSize: 16, paddingHorizontal: 10, marginTop: wp('5%'), marginBottom: wp('5%')}}>IDR {this.format(this.state.selectedPlatform.rate)}</Text>
+                                </View>
+                                :
+                                <View>
+                                    <Text style={{fontSize: 16, paddingHorizontal: 10, marginTop: wp('5%'), marginBottom: wp('5%')}}>IDR 0</Text>
+                                </View>
+                            }
+                        </View>
+
+                        <View>
+                            <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Amount</Text>
+                        </View>
+                        <View style={{ elevation: 2, backgroundColor: 'white', borderRadius  : wp('2.22223%') }}>
+                            <TextInput
+                              onChangeText={(text) => {
+                                this.setState({
+                                  amount: text*1,
+                                  price: +text * +this.state.selectedPlatform.rate
+                                })
+                              }}
+                              style={{fontSize: 16, paddingHorizontal: 10}}
+                              keyboardType='phone-pad'
+                              ref={input => { this.amountInput = input }}
+                            />
+                        </View>
+                      </>
+                      :
+                      <>
+                        <View style={{ marginTop: wp('5%'), marginBottom: wp('3%') }}>
+                            <Text style={{ fontWeight: 'bold', fontSize: wp('5%') }}>Nominal</Text>
+                        </View>
+                        <FlatList
+                            data={this.state.all_product}
+                            keyExtractor={item => item.id_pulsa}
+                            ListFooterComponent={<View style={{ marginBottom: wp('5%') }} />}
+                            renderItem={({item}) => {
+                              return (
+                              <View>
+                                  <TouchableOpacity onPress={() => this.selectingPulsa(item)} style={{ padding: wp('3'), marginBottom: wp('2'), backgroundColor: this.state.semi_selecting_pulsa == item.pulsa_code ? '#1DF318' : '#FFF', elevation: 2, borderRadius: wp('2.3%'), width: wp('90%'), flexDirection: 'row' }}>
+                                      <View style={{ marginLeft: wp('2%'), justifyContent: 'center', width: wp('40%') }}>
+                                          <Text style={{ fontSize: 17, fontFamily: 'Ubuntu-Regular' }}>{this.format(item.pulsa_nominal)}</Text>
+                                      </View>
+                                      <View style={{ marginLeft: wp('5%'), justifyContent: 'center', width: wp('35%'), alignItems: 'flex-end' }}>
+                                          <Text style={{fontFamily: 'Ubuntu-Medium', fontSize: 17, color: '#3269B3' }}>Rp {this.format(item.price_borneo)}</Text>
+                                      </View>
+                                  </TouchableOpacity>
+                              </View>
+                              )
+                            }}
+                        />
+                      </>
+                    }
                   </>
                   :
                   null
@@ -468,14 +582,25 @@ class Mobile extends Component<any,any>{
             </View>
         </ScrollView>
         <View style={{position: 'relative', paddingTop: wp('2.5%'), paddingBottom: wp('5%'), width: '100%', backgroundColor: 'white', elevation: 16, flexDirection: 'row'}}>
-            <View style={{flexDirection: 'column', flex: 1, marginLeft: wp('5%'), justifyContent: 'center'}}>
+            {this.state.is_forex ?
+              <View style={{flexDirection: 'column', flex: 1, marginLeft: wp('5%'), justifyContent: 'center'}}>
                 <Text style={{fontWeight: 'bold', fontSize: wp('4%')}}>Total</Text>
                 {this.state.code !== undefined ?
-                  <Text style={{color: '#1DF318', fontWeight: 'bold', fontSize: wp('4%')}}>Rp {this.format(this.state.price_pulsa-this.state.discount)}</Text>
+                  <Text style={{color: '#1DF318', fontWeight: 'bold', fontSize: wp('4%')}}>Rp {this.format(this.state.price-this.state.discount)}</Text>
                   :
-                  <Text style={{color: '#1DF318', fontWeight: 'bold', fontSize: wp('4%')}}>Rp {this.format(this.state.price_pulsa)}</Text>
+                  <Text style={{color: '#1DF318', fontWeight: 'bold', fontSize: wp('4%')}}>Rp {this.format(this.state.price)}</Text>
                 }
-            </View>
+              </View>
+              :
+              <View style={{flexDirection: 'column', flex: 1, marginLeft: wp('5%'), justifyContent: 'center'}}>
+                  <Text style={{fontWeight: 'bold', fontSize: wp('4%')}}>Total</Text>
+                  {this.state.code !== undefined ?
+                    <Text style={{color: '#1DF318', fontWeight: 'bold', fontSize: wp('4%')}}>Rp {this.format(this.state.price_pulsa-this.state.discount)}</Text>
+                    :
+                    <Text style={{color: '#1DF318', fontWeight: 'bold', fontSize: wp('4%')}}>Rp {this.format(this.state.price_pulsa)}</Text>
+                  }
+              </View>
+            }
             <View
                 style={{
                     // justifyContent: 'flex-end'
@@ -483,12 +608,29 @@ class Mobile extends Component<any,any>{
                     marginRight: wp('5%')
                 }}
             >
+              {this.state.is_forex ?
+                <TouchableOpacity
+                  onPress={() => this.handlePay()}
+                  style={{ backgroundColor: 
+                    this.state.selectedOperator != -1 &&
+                    +this.state.amount > 0 &&
+                    this.state.discount_not_valid === undefined ? '#3269B3': '#ccc', borderRadius: wp('2.223%'), padding: wp('2.5%'), flexDirection: 'row'
+                  }} disabled={
+                    !(this.state.selectedOperator != -1 &&
+                    +this.state.amount > 0 &&
+                    this.state.discount_not_valid === undefined)
+                  }>
+                  <Image source={logo} style={{marginRight: wp('2.5%')}}/>
+                  <Text style={{fontWeight: 'bold', fontSize: wp('5%'), color: 'white'}}>Pay</Text>
+                </TouchableOpacity>
+                :
                 <TouchableOpacity 
                     onPress={() => this.handlePay()}
                     style={{ backgroundColor: this.state.semi_selecting_pulsa != undefined ? '#3269B3': '#ccc', borderRadius: wp('2.223%'), padding: wp('2.5%'), flexDirection: 'row'}} disabled={this.state.semi_selecting_pulsa == undefined}>
                     <Image source={logo} style={{marginRight: wp('2.5%')}}/>
                     <Text style={{fontWeight: 'bold', fontSize: wp('5%'), color: 'white'}}>Pay</Text>
                 </TouchableOpacity>
+              }
             </View>
         </View>
         </>

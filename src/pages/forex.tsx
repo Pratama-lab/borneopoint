@@ -102,6 +102,7 @@ class Forex extends Component<any,any>{
   }
 
   selectingOperator = (itemValue) => {
+      console.log(itemValue)
       this.setState({loading:true})
       if(itemValue !== -1){
           this.setState({
@@ -109,7 +110,7 @@ class Forex extends Component<any,any>{
               selectedPlatform: this.state.topup_platform[itemValue],
               loading:false
           })
-          // console.log(this.state.selectedPlatform)
+          // console.log('test: '+this.state.topup_platform[itemValue].rate)
       }else{
         this.setState({
             selectedOperator: -1,
@@ -312,10 +313,10 @@ format = (x) => {
             </DialogContent>
         </Dialog>
         <View>
-            <View>
+          <View>
             <Text style={{fontWeight: 'bold', fontSize: wp('5%')}}>Select Platform</Text>
-            </View>
-            <View style={{ elevation: 2, backgroundColor: 'white', borderRadius  : wp('2.22223%') }}>
+          </View>
+          <View style={{ elevation: 2, backgroundColor: 'white', borderRadius  : wp('2.22223%') }}>
             <Picker
                 mode={'dropdown'}
                 selectedValue={this.state.selectedOperator}
@@ -323,14 +324,13 @@ format = (x) => {
                 onValueChange={this.selectingOperator}
             >
                 <Picker.Item value={-1} label='Choose item ...' />
-                {
-                this.state.topup_platform.length != 0 ? 
+                {this.state.topup_platform.length != 0 ? 
                     this.state.topup_platform.map((item,index) => (
                         <Picker.Item key={index} label={item.platform +' ('+ item.currency +') '} value={index} />
                     )) : null
                 }
             </Picker>
-            </View>
+          </View>
         </View>
 
         {/* <View>
