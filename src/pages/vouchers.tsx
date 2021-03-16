@@ -386,9 +386,8 @@ class Mobile extends Component<any,any>{
       price_borneo: this.state.price_borneo,
       payment_channel: 'vouchers',
       coupon: this.state.code
-    }
+    }  
     
-    // product_operator, product_nominal, phone_number, user_id, product_id, pulsa_price, price_borneo
     axios.get(api_base_url+'top_up_request', {params:{data}})
     .then(response => {
       this.setState({loading: false})
@@ -424,6 +423,62 @@ class Mobile extends Component<any,any>{
     })
     .catch((e) => console.log(e))
   }
+
+  handlePayForex = async () => {
+    const id_login = await AsyncStorage.getItem('@id_login')
+    this.setState({loading: true})
+    var data = {
+      // product_operator: this.state.product_operator,
+      // product_nominal: this.state.product_nominal,
+      phone: this.state.phone_number,
+      user_id: id_login,
+      product_type: 'topup_platform',
+      // product_id: this.state.product_id,
+      pulsa_price: '0',
+      price_borneo: this.state.price,
+      topup_id: this.state.selectedPlatform.id,
+      topup_rate: this.state.selectedPlatform.rate,
+      topup_conversion: this.state.amount,
+      payment_channel: this.state.selectedPlatform.platform,
+      coupon: this.state.code
+    }
+
+    // product_operator, product_nominal, phone_number, user_id, product_id, pulsa_price, price_borneo
+    axios.get(api_base_url+'top_up_request', {params:{data}})
+    .then(response => {
+      this.setState({loading: false})
+      if (response.data.status === 'Success'){
+        Alert.alert(
+            'Success!',
+            "We're Processing your order",
+            [
+                { text: 'OK', onPress: () => this.props.navigation.reset({ routes: [{ name: 'Main' }] }) }
+            ]
+        )
+      }else{
+        if (response.data.data.message === "Insufficient Balance") {
+          Alert.alert(
+            response.data.data.message,
+            response.data.data.submessage,
+            [
+              { text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: "cancel" },
+              { text: 'Top Up Now', onPress: () => this.props.navigation.push('TopUp') }
+            ]
+          )
+        } else {
+          Alert.alert(
+            response.data.data.message,
+            response.data.data.submessage,
+            [
+              { text: 'OK', onPress: () => console.log('Cancel Pressed'), style: "cancel" }
+            ]
+          )
+        }
+      }
+    })
+    .catch((err) => {ToastAndroid.show(err.message, ToastAndroid.SHORT)})
+  }
+
   render = () =>
   <>
     {this.state.loading ?
@@ -610,7 +665,7 @@ class Mobile extends Component<any,any>{
             >
               {this.state.is_forex ?
                 <TouchableOpacity
-                  onPress={() => this.handlePay()}
+                  onPress={() => this.handlePayForex()}
                   style={{ backgroundColor: 
                     this.state.selectedOperator != -1 &&
                     +this.state.amount > 0 &&
